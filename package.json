@@ -1,6 +1,6 @@
 {
   "name": "@sabishii-me/dsh-model-provider-shisa",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Optional Shisa model provider and sign-in UI for DeepSeek Harness",
   "type": "module",
   "license": "MIT",
@@ -49,11 +49,11 @@
   "peerDependencies": {
     "@deepseek-ai/schemastery": "3.18.5-alpha.2",
     "@deepseek-ai/cordis": "4.0.5-alpha.2",
-    "@deepseek-ai/dsh-authorization": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-credentials": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-llm": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-typert-protocol": "0.2.1-alpha.2"
+    "@deepseek-ai/dsh-authorization": "^0.2.1-0",
+    "@deepseek-ai/dsh-credentials": "^0.2.1-0",
+    "@deepseek-ai/dsh-llm-pi-ai": "^0.2.1-0",
+    "@deepseek-ai/dsh-llm": "^0.2.1-0",
+    "@deepseek-ai/dsh-typert-protocol": "^0.2.1-0"
   },
   "devDependencies": {
     "@deepseek-ai/schemastery": "3.18.5-alpha.2",
