@@ -6,6 +6,7 @@ const _deepseek_ai_dsh_experimental_shisa_provider_shisa_cancel_result$schema = 
 let _deepseek_ai_dsh_experimental_shisa_provider_shisa_getState_result$schema$value
 const _deepseek_ai_dsh_experimental_shisa_provider_shisa_getState_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_getState_result$schema$value ??= z.object({
   'phase': z.union([z.literal("signed-out"), z.literal("ready"), z.literal("error"), z.literal("waiting")]),
+  'credential': z.union([z.literal("device"), z.literal("api-key")]).optional(),
   'url': z.string().optional(),
   'code': z.string().optional(),
   'message': z.string().optional(),
@@ -29,6 +30,12 @@ let _deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema$valu
 const _deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema$value ??= z.void())
 let _deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema$value
 const _deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema$value ??= z.void())
+let _deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema$value
+const _deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema$value ??= z.void())
+let _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema$value
+const _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema$value
+const _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema$value ??= z.void())
 
 export const TYPERT_REMOTE = {
   package: '@sabishii-me/dsh-model-provider-shisa',
@@ -107,6 +114,54 @@ export const TYPERT_REMOTE = {
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema,
       },
       sourceLocation: {"file":"packages/experimental/shisa-provider/src/index.ts","line":115,"column":9},
+    },
+    {
+      id: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey',
+      service: 'shisaProvider',
+      namespace: 'shisa',
+      method: 'setApiKey',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'key',
+          wire: 'key',
+          description: 'Shisa API key; read back from the catalog before it is persisted.',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey:key',
+            create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema,
+            jsonSchema: {"type":"string"},
+          },
+          strictCodec: {
+            mode: 'strict',
+            typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey:key',
+            create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema,
+            jsonSchema: {"type":"string"},
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey:result',
+        create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema,
+      },
+      sourceLocation: {"file":"src/provider/index.ts","line":142,"column":3},
+    },
+    {
+      id: '@sabishii-me/dsh-model-provider-shisa#shisa/clearApiKey',
+      service: 'shisaProvider',
+      namespace: 'shisa',
+      method: 'clearApiKey',
+      invocation: { kind: 'direct' },
+      parameters: [
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/clearApiKey:result',
+        create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema,
+      },
+      sourceLocation: {"file":"src/provider/index.ts","line":172,"column":3},
     },
   ],
 }

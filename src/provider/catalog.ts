@@ -48,9 +48,14 @@ export function catalogModels(catalog: z.infer<typeof catalogSchema>): { models:
         if (reasoningEfforts !== false) defaults.set(item.modelId, item.defaultThinkingLevel)
       }
     } else if (item.capabilities && !item.capabilities.includes('reasoning')) reasoningEfforts = false
+    // Only request modalities pi-ai models: an endpoint that omits `text` is not
+    // a chat model, and declaring it would over-claim what the gateway accepts.
+    const declared = item.modalities?.filter((value): value is 'text' | 'image' => value === 'text' || value === 'image')
+    const input = declared?.includes('text') ? [...new Set(declared)] : undefined
     return { id: item.modelId, name: item.name ?? item.modelId,
       ...(item.limits?.contextWindow === undefined ? {} : { contextWindow: item.limits.contextWindow }),
       ...(item.limits?.maxOutputTokens === undefined ? {} : { maxTokens: item.limits.maxOutputTokens }),
+      ...(input === undefined ? {} : { input }),
       ...(reasoningEfforts === undefined ? {} : { reasoningEfforts }),
       ...(Object.keys(merged).length ? { compat: merged } : {}),
     }

@@ -8,6 +8,10 @@
 .actions:empty { display: none; }
 .catalog { border-top: 0.5px solid var(--dsw-alias-border-l3); padding-top: 12px; }
 .catalog > summary { cursor: pointer; color: var(--dsw-alias-label-secondary); font-size: 12px; }
+.advanced { border-top: 0.5px solid var(--dsw-alias-border-l3); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.advanced > summary { cursor: pointer; color: var(--dsw-alias-label-secondary); font-size: 12px; }
+.advanced input { font-family: var(--dsw-font-mono, monospace); font-size: 12px; }
+.advanced .actions { justify-content: flex-start; align-items: center; }
 .field { display: flex; flex-direction: column; gap: 6px; margin: 16px 0; font-size: 12px; color: var(--dsw-alias-label-secondary); }
 .modelsHead { border-top: 0.5px solid var(--dsw-alias-border-l3); padding-top: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--dsw-alias-label-secondary); }
 .modelList { padding: 0; list-style: none; margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px; }

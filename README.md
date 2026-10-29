@@ -39,14 +39,20 @@ and slot registrations. This repository publication does not publish to npm.
 
 - HTTPS gateway defaults to `https://gateway.shisa.ai`.
 - Sign-in issues an authorization link and code; the user approves in a browser.
+- An **advanced option stores a Shisa API key instead of approving a device**. The
+  key is sent once to `https://api.shisa.ai/v1/jouzu/model-catalog` before anything
+  is persisted, so a rejected key never displaces a working credential; the
+  gateway base is derived from that catalog address (`https://api.shisa.ai/v1`).
+  Saving a key supersedes the device link on this machine.
 - Cancellation stops the pending authorization attempt.
 - Model discovery is separate from authorization. Discovery failure is shown and
   can be retried without silently fabricating models.
 - Model requests use the existing DSH pi-ai adapter, not a new agent loop.
-- Sign-out requests revocation; failures are surfaced rather than hidden.
+- Sign-out requests revocation for a device link; an API key is forgotten locally.
 
-Configuration: `gateway`, `clientVersion`, `requestTimeoutMs` (30000 default), and
-`maxResponseBytes` (1048576 default). Never commit credentials or user profiles.
+Configuration: `gateway`, `apiKeyCatalogUrl`, `clientVersion`, `requestTimeoutMs`
+(30000 default), and `maxResponseBytes` (1048576 default). Never commit credentials
+or user profiles.
 
 ## Verification limits
 

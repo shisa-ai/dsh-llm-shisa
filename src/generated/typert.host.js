@@ -6,6 +6,7 @@ const _deepseek_ai_dsh_experimental_shisa_provider_shisa_cancel_result$schema = 
 let _deepseek_ai_dsh_experimental_shisa_provider_shisa_getState_result$schema$value
 const _deepseek_ai_dsh_experimental_shisa_provider_shisa_getState_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_getState_result$schema$value ??= z.object({
   'phase': z.union([z.literal("signed-out"), z.literal("ready"), z.literal("error"), z.literal("waiting")]),
+  'credential': z.union([z.literal("device"), z.literal("api-key")]).optional(),
   'url': z.string().optional(),
   'code': z.string().optional(),
   'message': z.string().optional(),
@@ -29,6 +30,12 @@ let _deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema$valu
 const _deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema$value ??= z.void())
 let _deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema$value
 const _deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema$value ??= z.void())
+let _deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema$value
+const _deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema$value ??= z.void())
+let _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema$value
+const _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema$value
+const _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema$value ??= z.void())
 
 export const TYPERT = {
   package: '@sabishii-me/dsh-model-provider-shisa',
@@ -111,6 +118,54 @@ export const TYPERT = {
       },
       sourceLocation: {"file":"packages/experimental/shisa-provider/src/index.ts","line":115,"column":9},
     },
+    {
+      id: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey',
+      service: 'shisaProvider',
+      namespace: 'shisa',
+      method: 'setApiKey',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'key',
+          wire: 'key',
+          description: 'Shisa API key; read back from the catalog before it is persisted.',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey:key',
+            create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema,
+            jsonSchema: {"type":"string"},
+          },
+          strictCodec: {
+            mode: 'strict',
+            typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey:key',
+            create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema,
+            jsonSchema: {"type":"string"},
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey:result',
+        create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema,
+      },
+      sourceLocation: {"file":"src/provider/index.ts","line":142,"column":3},
+    },
+    {
+      id: '@sabishii-me/dsh-model-provider-shisa#shisa/clearApiKey',
+      service: 'shisaProvider',
+      namespace: 'shisa',
+      method: 'clearApiKey',
+      invocation: { kind: 'direct' },
+      parameters: [
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/clearApiKey:result',
+        create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema,
+      },
+      sourceLocation: {"file":"src/provider/index.ts","line":172,"column":3},
+    },
   ],
   model: {
     "services": [
@@ -156,12 +211,26 @@ export const TYPERT = {
             "signature": "@Remote async refreshModels(): Promise<void>",
             "summary": "Retry model discovery without reauthorizing the signed-in account.",
             "jsDoc": "/** Retry model discovery without reauthorizing the signed-in account. */"
+          },
+          {
+            "kind": "method",
+            "name": "setApiKey",
+            "signature": "@Remote async setApiKey(key: string): Promise<void>",
+            "summary": "Validate and store an API key, replacing the device sign-in it supersedes.",
+            "jsDoc": "/** Validate and store an API key, replacing the device sign-in it supersedes.\r\n * @param key - Shisa API key; read back from the catalog before it is persisted.\r\n * @returns after the catalog is published as the new model generation.\r\n */"
+          },
+          {
+            "kind": "method",
+            "name": "clearApiKey",
+            "signature": "@Remote async clearApiKey(): Promise<void>",
+            "summary": "Forget the stored API key and every model it published.",
+            "jsDoc": "/** Forget the stored API key and every model it published.\r\n * @returns after the adapter registration is withdrawn.\r\n */"
           }
         ],
         "types": [
           {
             "name": "ShisaStatus",
-            "declaration": "export interface ShisaStatus {\n    phase: 'signed-out' | 'waiting' | 'ready' | 'error';\n    url?: string;\n    code?: string;\n    message?: string;\n    organization?: string;\n    catalogPhase?: 'idle' | 'loading' | 'ready' | 'error';\n    catalogError?: string;\n    baseURL?: string;\n    catalogURL?: string;\n    catalogUpdatedAt?: number;\n    models?: { id: string; name: string; contextWindow?: number; maxTokens?: number; }[];\n    modelCount: number;\n}"
+            "declaration": "export interface ShisaStatus {\n    phase: 'signed-out' | 'waiting' | 'ready' | 'error';\n    credential?: 'device' | 'api-key';\n    url?: string;\n    code?: string;\n    message?: string;\n    organization?: string;\n    catalogPhase?: 'idle' | 'loading' | 'ready' | 'error';\n    catalogError?: string;\n    baseURL?: string;\n    catalogURL?: string;\n    catalogUpdatedAt?: number;\n    models?: { id: string; name: string; contextWindow?: number; maxTokens?: number; }[];\n    modelCount: number;\n}"
           }
         ]
       }

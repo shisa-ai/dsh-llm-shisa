@@ -12,15 +12,16 @@ import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots
 import type { ShisaStatus } from '../provider/types.ts'
 import css from './account.module.css'
 
-const en = { modelName: 'Model name', details: 'Model details', modelId: 'Model ID', baseURL: 'Base URL', catalogURL: 'Catalog URL', catalogConfig: 'Model catalog', context: 'Context window', output: 'Maximum output tokens', managed: 'Using the Shisa catalog', copy: 'Copy authorization link', copied: 'Link copied', manual: 'Open this link in any browser, or copy it to another browser or device. Keep this page open while approving.', opening: 'Requesting authorization link…', popup: 'If no tab opened, use the link below.', onboarding: 'Connect a model to get started', apiKey: 'Use a DeepSeek API key', later: 'Configure later', title: 'Shisa', signIn: 'Sign in with Shisa', signOut: 'Sign out', cancel: 'Cancel sign-in', open: 'Open authorization page', code: 'Verification code', waiting: 'Waiting for browser approval', ready: 'Connected', disconnected: 'Not connected', description: 'Use Shisa models in DSH. Browser authorization uses the Jouzu client identity.', models: 'Available models', refresh: 'Refresh models' } as const
-const zh: Record<keyof typeof en, string> = { modelName: '模型名称', details: '模型参数', modelId: '模型 ID', baseURL: 'API 地址', catalogURL: '目录地址', catalogConfig: '模型目录', context: '上下文窗口', output: '最大输出 token', managed: '使用 Shisa 模型目录', copy: '复制授权链接', copied: '链接已复制', manual: '可在任意浏览器打开此地址，或复制到其他浏览器、设备。授权期间请保持本页打开。', opening: '正在获取授权地址…', popup: '若未打开新标签页，请使用下方链接。', onboarding: '连接模型，开始使用', apiKey: '使用 DeepSeek API key', later: '稍后配置', title: 'Shisa', signIn: '登录 Shisa', signOut: '退出登录', cancel: '取消登录', open: '打开授权页面', code: '验证码', waiting: '等待浏览器授权', ready: '已连接', disconnected: '未连接', description: '在 DSH 中使用 Shisa 模型。浏览器授权使用 Jouzu 客户端身份。', models: '可用模型', refresh: '刷新模型' }
+const en = { modelName: 'Model name', details: 'Model details', modelId: 'Model ID', baseURL: 'Base URL', catalogURL: 'Catalog URL', catalogConfig: 'Model catalog', context: 'Context window', output: 'Maximum output tokens', managed: 'Using the Shisa catalog', copy: 'Copy authorization link', copied: 'Link copied', manual: 'Open this link in any browser, or copy it to another browser or device. Keep this page open while approving.', opening: 'Requesting authorization link…', popup: 'If no tab opened, use the link below.', onboarding: 'Connect a model to get started', apiKey: 'Use a DeepSeek API key', later: 'Configure later', title: 'Shisa', signIn: 'Sign in with Shisa', signOut: 'Sign out', cancel: 'Cancel sign-in', open: 'Open authorization page', code: 'Verification code', waiting: 'Waiting for browser approval', ready: 'Connected', disconnected: 'Not connected', description: 'Use Shisa models in DSH. Browser authorization uses the Jouzu client identity.', models: 'Available models', refresh: 'Refresh models', credentialDevice: 'device link', credentialKey: 'API key', advanced: 'Advanced: use an API key', apiKeyHint: 'Paste a Shisa API key instead of approving a device. It is checked against the model catalog before it is stored, and never leaves this machine afterwards.', apiKeyPlaceholder: 'shsk:…', saveApiKey: 'Save key', removeApiKey: 'Forget key', replaceWarning: 'Saving a key replaces the current device link on this machine.' } as const
+const zh: Record<keyof typeof en, string> = { modelName: '模型名称', details: '模型参数', modelId: '模型 ID', baseURL: 'API 地址', catalogURL: '目录地址', catalogConfig: '模型目录', context: '上下文窗口', output: '最大输出 token', managed: '使用 Shisa 模型目录', copy: '复制授权链接', copied: '链接已复制', manual: '可在任意浏览器打开此地址，或复制到其他浏览器、设备。授权期间请保持本页打开。', opening: '正在获取授权地址…', popup: '若未打开新标签页，请使用下方链接。', onboarding: '连接模型，开始使用', apiKey: '使用 DeepSeek API key', later: '稍后配置', title: 'Shisa', signIn: '登录 Shisa', signOut: '退出登录', cancel: '取消登录', open: '打开授权页面', code: '验证码', waiting: '等待浏览器授权', ready: '已连接', disconnected: '未连接', description: '在 DSH 中使用 Shisa 模型。浏览器授权使用 Jouzu 客户端身份。', models: '可用模型', refresh: '刷新模型', credentialDevice: '设备授权', credentialKey: 'API key', advanced: '高级：直接使用 API key', apiKeyHint: '粘贴 Shisa API key，跳过设备授权。保存前会先用它读一次模型目录；之后 key 只留在这台机器上。', apiKeyPlaceholder: 'shsk:…', saveApiKey: '保存 key', removeApiKey: '清除 key', replaceWarning: '保存 key 会取代本机当前的设备授权。' }
 declare module '@deepseek-ai/dsh-client-ui-slots' { interface LocaleNamespaceMap { shisa: keyof typeof en } }
-interface Actions { read: () => Promise<ShisaStatus>; signIn: () => Promise<void>; signOut: () => Promise<void>; cancel: () => Promise<void>; refresh: () => Promise<void> }
-function Account({ read, signIn, signOut, cancel, refresh, t, onReady }: Actions & { onReady?: () => void } & PropsLocale<'shisa'>) {
+interface Actions { read: () => Promise<ShisaStatus>; signIn: () => Promise<void>; signOut: () => Promise<void>; cancel: () => Promise<void>; refresh: () => Promise<void>; setApiKey: (key: string) => Promise<void>; clearApiKey: () => Promise<void> }
+function Account({ read, signIn, signOut, cancel, refresh, setApiKey, clearApiKey, t, onReady }: Actions & { onReady?: () => void } & PropsLocale<'shisa'>) {
   const [state, setState] = useState<ShisaStatus | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [key, setKey] = useState('')
   useEffect(() => {
     let disposed = false
     let timer: ReturnType<typeof setTimeout> | undefined
@@ -37,9 +38,12 @@ function Account({ read, signIn, signOut, cancel, refresh, t, onReady }: Actions
     try { await action(); setState(await read()) } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) }
     finally { setBusy(false) }
   }
+  const byKey = state?.credential === 'api-key'
   return <section className={css.card} aria-label={t('title')}>
     <div className={css.identity}><strong>{t('title')}</strong><span>shisa</span></div>
-    <div className={css.accountState}><p>{state?.phase === 'ready' ? t('ready') : state?.phase === 'waiting' ? t('waiting') : t('disconnected')} {state?.organization}</p>{state?.phase === 'ready' && <Button disabled={busy} onClick={() => { void run(signOut) }}>{t('signOut')}</Button>}</div>
+    <div className={css.accountState}><p>{state?.phase === 'ready' ? t('ready') : state?.phase === 'waiting' ? t('waiting') : t('disconnected')} {state?.organization}
+      {state?.phase === 'ready' && state.credential && <span className={css.hint}> · {t(byKey ? 'credentialKey' : 'credentialDevice')}</span>}</p>
+      {state?.phase === 'ready' && <Button disabled={busy} onClick={() => { void run(byKey ? clearApiKey : signOut) }}>{t(byKey ? 'removeApiKey' : 'signOut')}</Button>}</div>
     {state?.phase === 'waiting' && <div><StateDot state="ongoing" />
       {state.code && <p>{t('code')}: <code>{state.code}</code></p>}
       {!state.url && <p>{t('opening')}</p>}
@@ -72,6 +76,16 @@ function Account({ read, signIn, signOut, cancel, refresh, t, onReady }: Actions
     </details>}
     {state?.catalogError && <p role="alert">{state.catalogError}</p>}
     {(error || (state?.phase === 'error' && state.message)) && <p role="alert">{error || state?.message}</p>}
+    <details className={css.advanced} open={state !== null && state.phase !== 'ready'}>
+      <summary>{t('advanced')}</summary>
+      <p className={css.hint}>{t('apiKeyHint')}</p>
+      <input type="password" aria-label={t('advanced')} placeholder={t('apiKeyPlaceholder')} autoComplete="off" spellCheck={false}
+        value={key} onChange={event => setKey(event.currentTarget.value)} style={{ width: '100%' }} />
+      <div className={css.actions}>
+        {state?.phase === 'ready' && !byKey && <span className={css.hint}>{t('replaceWarning')}</span>}
+        <Button disabled={busy || key.trim().length === 0} onClick={() => { void run(async () => { await setApiKey(key); setKey('') }) }}>{t('saveApiKey')}</Button>
+      </div>
+    </details>
     <div className={css.actions}>
       {state?.phase === 'waiting' ? <Button disabled={busy} onClick={() => { void run(cancel) }}>{t('cancel')}</Button>
         : state?.phase !== 'ready' && <Button disabled={busy} variant="primary" onClick={() => { setCopied(false); void run(signIn) }}>{t('signIn')}</Button>}
@@ -129,6 +143,8 @@ export function apply(ctx: Context): void {
       signIn: async () => { const r = await scope.remote.shisa.signIn(); if (!r.ok) throw new Error(r.error.message) },
       signOut: async () => { const r = await scope.remote.shisa.signOut(); if (!r.ok) throw new Error(r.error.message) },
       cancel: async () => { const r = await scope.remote.shisa.cancel(); if (!r.ok) throw new Error(r.error.message) },
+      setApiKey: async (key) => { const r = await scope.remote.shisa.setApiKey(key); if (!r.ok) throw new Error(r.error.message) },
+      clearApiKey: async () => { const r = await scope.remote.shisa.clearApiKey(); if (!r.ok) throw new Error(r.error.message) },
     }
     registerAccountUi(scope, actions)
   })

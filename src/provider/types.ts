@@ -1,6 +1,8 @@
 /** Secret-free account state sent to the initiating UI. */
 export interface ShisaStatus {
   phase: 'signed-out' | 'waiting' | 'ready' | 'error'
+  /** How the effective credential was supplied; absent when signed out. */
+  credential?: 'device' | 'api-key'
   url?: string
   code?: string
   message?: string
