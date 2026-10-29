@@ -38,10 +38,10 @@ let _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema$v
 const _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema$value ??= z.void())
 
 export const TYPERT_REMOTE = {
-  package: '@sabishii-me/dsh-model-provider-shisa',
+  package: 'dsh-llm-shisa',
   descriptors: [
     {
-      id: '@sabishii-me/dsh-model-provider-shisa#shisa/cancel',
+      id: 'dsh-llm-shisa#shisa/cancel',
       service: 'shisaProvider',
       namespace: 'shisa',
       method: 'cancel',
@@ -50,13 +50,13 @@ export const TYPERT_REMOTE = {
       ],
       result: {
         mode: 'strict',
-        typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/cancel:result',
+        typeSymbol: 'dsh-llm-shisa#shisa/cancel:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_cancel_result$schema,
       },
-      sourceLocation: {"file":"packages/experimental/shisa-provider/src/index.ts","line":109,"column":9},
+      sourceLocation: {"file":"src/provider/index.ts","line":139,"column":3},
     },
     {
-      id: '@sabishii-me/dsh-model-provider-shisa#shisa/getState',
+      id: 'dsh-llm-shisa#shisa/getState',
       service: 'shisaProvider',
       namespace: 'shisa',
       method: 'getState',
@@ -65,13 +65,13 @@ export const TYPERT_REMOTE = {
       ],
       result: {
         mode: 'strict',
-        typeSymbol: '@sabishii-me/dsh-model-provider-shisa/types#ShisaStatus',
+        typeSymbol: 'dsh-llm-shisa/types#ShisaStatus',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_getState_result$schema,
       },
-      sourceLocation: {"file":"packages/experimental/shisa-provider/src/index.ts","line":79,"column":9},
+      sourceLocation: {"file":"src/provider/index.ts","line":107,"column":3},
     },
     {
-      id: '@sabishii-me/dsh-model-provider-shisa#shisa/refreshModels',
+      id: 'dsh-llm-shisa#shisa/refreshModels',
       service: 'shisaProvider',
       namespace: 'shisa',
       method: 'refreshModels',
@@ -80,13 +80,13 @@ export const TYPERT_REMOTE = {
       ],
       result: {
         mode: 'strict',
-        typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/refreshModels:result',
+        typeSymbol: 'dsh-llm-shisa#shisa/refreshModels:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_refreshModels_result$schema,
       },
-      sourceLocation: {"file":"packages/experimental/shisa-provider/src/index.ts","line":152,"column":9},
+      sourceLocation: {"file":"src/provider/index.ts","line":248,"column":3},
     },
     {
-      id: '@sabishii-me/dsh-model-provider-shisa#shisa/signIn',
+      id: 'dsh-llm-shisa#shisa/signIn',
       service: 'shisaProvider',
       namespace: 'shisa',
       method: 'signIn',
@@ -95,13 +95,13 @@ export const TYPERT_REMOTE = {
       ],
       result: {
         mode: 'strict',
-        typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/signIn:result',
+        typeSymbol: 'dsh-llm-shisa#shisa/signIn:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema,
       },
-      sourceLocation: {"file":"packages/experimental/shisa-provider/src/index.ts","line":88,"column":9},
+      sourceLocation: {"file":"src/provider/index.ts","line":116,"column":3},
     },
     {
-      id: '@sabishii-me/dsh-model-provider-shisa#shisa/signOut',
+      id: 'dsh-llm-shisa#shisa/signOut',
       service: 'shisaProvider',
       namespace: 'shisa',
       method: 'signOut',
@@ -110,13 +110,13 @@ export const TYPERT_REMOTE = {
       ],
       result: {
         mode: 'strict',
-        typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/signOut:result',
+        typeSymbol: 'dsh-llm-shisa#shisa/signOut:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema,
       },
-      sourceLocation: {"file":"packages/experimental/shisa-provider/src/index.ts","line":115,"column":9},
+      sourceLocation: {"file":"src/provider/index.ts","line":188,"column":3},
     },
     {
-      id: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey',
+      id: 'dsh-llm-shisa#shisa/setApiKey',
       service: 'shisaProvider',
       namespace: 'shisa',
       method: 'setApiKey',
@@ -129,13 +129,13 @@ export const TYPERT_REMOTE = {
           source: 'json',
           codec: {
             mode: 'strict',
-            typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey:key',
+            typeSymbol: 'dsh-llm-shisa#shisa/setApiKey:key',
             create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema,
             jsonSchema: {"type":"string"},
           },
           strictCodec: {
             mode: 'strict',
-            typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey:key',
+            typeSymbol: 'dsh-llm-shisa#shisa/setApiKey:key',
             create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema,
             jsonSchema: {"type":"string"},
           },
@@ -143,13 +143,13 @@ export const TYPERT_REMOTE = {
       ],
       result: {
         mode: 'strict',
-        typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/setApiKey:result',
+        typeSymbol: 'dsh-llm-shisa#shisa/setApiKey:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema,
       },
-      sourceLocation: {"file":"src/provider/index.ts","line":142,"column":3},
+      sourceLocation: {"file":"src/provider/index.ts","line":146,"column":3},
     },
     {
-      id: '@sabishii-me/dsh-model-provider-shisa#shisa/clearApiKey',
+      id: 'dsh-llm-shisa#shisa/clearApiKey',
       service: 'shisaProvider',
       namespace: 'shisa',
       method: 'clearApiKey',
@@ -158,10 +158,10 @@ export const TYPERT_REMOTE = {
       ],
       result: {
         mode: 'strict',
-        typeSymbol: '@sabishii-me/dsh-model-provider-shisa#shisa/clearApiKey:result',
+        typeSymbol: 'dsh-llm-shisa#shisa/clearApiKey:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema,
       },
-      sourceLocation: {"file":"src/provider/index.ts","line":172,"column":3},
+      sourceLocation: {"file":"src/provider/index.ts","line":176,"column":3},
     },
   ],
 }

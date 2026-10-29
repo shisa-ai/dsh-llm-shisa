@@ -17,6 +17,11 @@ test('host and browser descriptors expose the same methods', () => {
   assert.equal(hostMethods().setApiKey.service, 'shisaProvider')
   assert.equal(hostMethods().setApiKey.namespace, 'shisa')
   assert.deepEqual(hostMethods().setApiKey.parameters.map(parameter => parameter.name), ['key'])
+  // Hand-carried descriptors drift; keep their provenance honest.
+  for (const method of Object.keys(hostMethods())) {
+    assert.equal(hostMethods()[method].sourceLocation.file, 'src/provider/index.ts', `${method} source file`)
+    assert.ok(Number.isInteger(hostMethods()[method].sourceLocation.line), `${method} source line`)
+  }
   // The loader rejects a manifest whose parameters omit the wire name.
   for (const method of Object.keys(hostMethods())) {
     for (const parameter of hostMethods()[method].parameters) assert.ok(typeof parameter.wire === 'string' && parameter.wire.length > 0, `${method}/${parameter.name} wire`)
@@ -40,8 +45,10 @@ test('an API-key catalog implies its gateway base', () => {
 })
 
 test('the API key never reaches a credential record owned by the flow', () => {
-  assert.equal(String(SHISA_CREDENTIAL), 'shisa-provider/account')
+  assert.equal(String(SHISA_CREDENTIAL), 'llm-shisa/account')
+  // The rename keeps the old key readable so an upgrade does not sign anyone out.
   const source = readFileSync(new URL('../src/provider/index.ts', import.meta.url), 'utf8')
+  assert.match(source, /credentialKey\('shisa-provider', 'account'\)/)
   // The key is stored only under the reference the adapter resolves, never as the
   // flow-owned grant record whose shape carries a link token.
   assert.match(source, /credentials\.set\(API_KEY, apiKey\)/)

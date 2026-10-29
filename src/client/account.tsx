@@ -7,21 +7,61 @@ import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import shisaRemote from '../generated/typert.remote-client.js'
 import type {} from '../generated/typert.remote-client.js'
-import { Button, StateDot, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button, Input, Modal, StateDot, Tag } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ShisaStatus } from '../provider/types.ts'
 import css from './account.module.css'
 
-const en = { modelName: 'Model name', details: 'Model details', modelId: 'Model ID', baseURL: 'Base URL', catalogURL: 'Catalog URL', catalogConfig: 'Model catalog', context: 'Context window', output: 'Maximum output tokens', managed: 'Using the Shisa catalog', copy: 'Copy authorization link', copied: 'Link copied', manual: 'Open this link in any browser, or copy it to another browser or device. Keep this page open while approving.', opening: 'Requesting authorization link…', popup: 'If no tab opened, use the link below.', onboarding: 'Connect a model to get started', apiKey: 'Use a DeepSeek API key', later: 'Configure later', title: 'Shisa', signIn: 'Sign in with Shisa', signOut: 'Sign out', cancel: 'Cancel sign-in', open: 'Open authorization page', code: 'Verification code', waiting: 'Waiting for browser approval', ready: 'Connected', disconnected: 'Not connected', description: 'Use Shisa models in DSH. Browser authorization uses the Jouzu client identity.', models: 'Available models', refresh: 'Refresh models', credentialDevice: 'device link', credentialKey: 'API key', advanced: 'Advanced: use an API key', apiKeyHint: 'Paste a Shisa API key instead of approving a device. It is checked against the model catalog before it is stored, and never leaves this machine afterwards.', apiKeyPlaceholder: 'shsk:…', saveApiKey: 'Save key', removeApiKey: 'Forget key', replaceWarning: 'Saving a key replaces the current device link on this machine.' } as const
-const zh: Record<keyof typeof en, string> = { modelName: '模型名称', details: '模型参数', modelId: '模型 ID', baseURL: 'API 地址', catalogURL: '目录地址', catalogConfig: '模型目录', context: '上下文窗口', output: '最大输出 token', managed: '使用 Shisa 模型目录', copy: '复制授权链接', copied: '链接已复制', manual: '可在任意浏览器打开此地址，或复制到其他浏览器、设备。授权期间请保持本页打开。', opening: '正在获取授权地址…', popup: '若未打开新标签页，请使用下方链接。', onboarding: '连接模型，开始使用', apiKey: '使用 DeepSeek API key', later: '稍后配置', title: 'Shisa', signIn: '登录 Shisa', signOut: '退出登录', cancel: '取消登录', open: '打开授权页面', code: '验证码', waiting: '等待浏览器授权', ready: '已连接', disconnected: '未连接', description: '在 DSH 中使用 Shisa 模型。浏览器授权使用 Jouzu 客户端身份。', models: '可用模型', refresh: '刷新模型', credentialDevice: '设备授权', credentialKey: 'API key', advanced: '高级：直接使用 API key', apiKeyHint: '粘贴 Shisa API key，跳过设备授权。保存前会先用它读一次模型目录；之后 key 只留在这台机器上。', apiKeyPlaceholder: 'shsk:…', saveApiKey: '保存 key', removeApiKey: '清除 key', replaceWarning: '保存 key 会取代本机当前的设备授权。' }
+const en = { title: 'Shisa', description: 'Use Shisa models in DSH. Browser authorization uses the Jouzu client identity.', signIn: 'Sign in with Shisa', signOut: 'Sign out', cancel: 'Cancel sign-in', removeApiKey: 'Forget key', retry: 'Retry', waiting: 'Waiting for browser approval', ready: 'Connected', disconnected: 'Not connected', failed: 'Unavailable', code: 'Verification code', open: 'Open authorization page', copy: 'Copy authorization link', copied: 'Link copied', opening: 'Requesting authorization link…', manual: 'Open this link in any browser, or copy it to another browser or device. Keep this page open while approving.', credential: 'Credential', credentialDevice: 'Device link', credentialKey: 'API key', endpoint: 'Endpoint', models: 'Models', modelCount: 'models', refresh: 'Refresh', noModels: 'No models published yet', contextShort: 'context', outputShort: 'output', advanced: 'Advanced: use an API key', apiKeyHint: 'Paste a Shisa API key instead of approving a device. It is checked against the model catalog before it is stored, and never leaves this machine afterwards.', apiKeyPlaceholder: 'shsk:…', saveApiKey: 'Save key', replaceWarning: 'Saving a key replaces the current device link on this machine.', showKey: 'Show key', hideKey: 'Hide key', onboarding: 'Connect a model to get started', apiKey: 'Use a DeepSeek API key', later: 'Configure later' } as const
+const zh: Record<keyof typeof en, string> = { title: 'Shisa', description: '在 DSH 中使用 Shisa 模型。浏览器授权使用 Jouzu 客户端身份。', signIn: '登录 Shisa', signOut: '退出登录', cancel: '取消登录', removeApiKey: '清除 key', retry: '重试', waiting: '等待浏览器授权', ready: '已连接', disconnected: '未连接', failed: '不可用', code: '验证码', open: '打开授权页面', copy: '复制授权链接', copied: '链接已复制', opening: '正在获取授权地址…', manual: '可在任意浏览器打开此地址，或复制到其他浏览器、设备。授权期间请保持本页打开。', credential: '凭据', credentialDevice: '设备授权', credentialKey: 'API key', endpoint: '接口地址', models: '模型', modelCount: '个模型', refresh: '刷新', noModels: '还没有发布任何模型', contextShort: '上下文', outputShort: '输出', advanced: '高级：直接使用 API key', apiKeyHint: '粘贴 Shisa API key，跳过设备授权。保存前会先用它读一次模型目录；之后 key 只留在这台机器上。', apiKeyPlaceholder: 'shsk:…', saveApiKey: '保存 key', replaceWarning: '保存 key 会取代本机当前的设备授权。', showKey: '显示', hideKey: '隐藏', onboarding: '连接模型，开始使用', apiKey: '使用 DeepSeek API key', later: '稍后配置' }
 declare module '@deepseek-ai/dsh-client-ui-slots' { interface LocaleNamespaceMap { shisa: keyof typeof en } }
 interface Actions { read: () => Promise<ShisaStatus>; signIn: () => Promise<void>; signOut: () => Promise<void>; cancel: () => Promise<void>; refresh: () => Promise<void>; setApiKey: (key: string) => Promise<void>; clearApiKey: () => Promise<void> }
+type Tone = 'success' | 'danger' | 'info' | 'outline'
+
+/** One status pill: the only place the account phase is named. */
+function StatusTag({ state, t }: { state: ShisaStatus | null; t: PropsLocale<'shisa'>['t'] }) {
+  const phase = state?.phase ?? 'signed-out'
+  const tone: Tone = phase === 'ready' ? 'success' : phase === 'error' ? 'danger' : phase === 'waiting' ? 'info' : 'outline'
+  const label = phase === 'ready' ? t('ready') : phase === 'error' ? t('failed') : phase === 'waiting' ? t('waiting') : t('disconnected')
+  return <Tag tone={tone}>{label}</Tag>
+}
+
+/** The device-flow notice, including the link the user must approve. */
+function DeviceWaiting({ state, t, onCancel, busy, onCopy, copied }: { state: ShisaStatus; t: PropsLocale<'shisa'>['t']; onCancel: () => void; busy: boolean; onCopy: () => void; copied: boolean }) {
+  return <div className={css.waiting}>
+    <div className={css.waitingHead}><StateDot state="ongoing" /><span>{state.code ? `${t('code')}: ` : t('opening')}{state.code && <code>{state.code}</code>}</span></div>
+    {state.url ? <>
+      <p className={css.hint}>{t('manual')}</p>
+      <Input readOnly value={state.url} aria-label={t('open')} onFocus={event => event.currentTarget.select()} />
+      <div className={css.actions}>
+        <Button size="sm" variant="outline" onClick={onCopy}>{t(copied ? 'copied' : 'copy')}</Button>
+        <Button size="sm" variant="ghost" disabled={busy} onClick={onCancel}>{t('cancel')}</Button>
+      </div>
+    </> : <p className={css.hint}>{t('opening')}</p>}
+  </div>
+}
+
+/** Published models, with the detail a picker needs and nothing more. */
+function ModelList({ state, t }: { state: ShisaStatus; t: PropsLocale<'shisa'>['t'] }) {
+  const models = state.models ?? []
+  if (!models.length) return <p className={css.hint}>{t('noModels')}</p>
+  return <ul className={css.modelList}>{models.map(model => <li key={model.id} className={css.modelRow}>
+    <span className={css.modelName} title={model.name}>{model.name ?? model.id}</span>
+    <span className={css.modelId} title={model.id}>{model.id}</span>
+    <span className={css.modelLimits}>
+      {model.contextWindow !== undefined && <span title={t('contextShort')}>{model.contextWindow.toLocaleString()}</span>}
+      {model.maxTokens !== undefined && <span title={t('outputShort')}>{model.maxTokens.toLocaleString()}</span>}
+    </span>
+  </li>)}</ul>
+}
+
 function Account({ read, signIn, signOut, cancel, refresh, setApiKey, clearApiKey, t, onReady }: Actions & { onReady?: () => void } & PropsLocale<'shisa'>) {
   const [state, setState] = useState<ShisaStatus | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
   const [key, setKey] = useState('')
+  const [reveal, setReveal] = useState(false)
   useEffect(() => {
     let disposed = false
     let timer: ReturnType<typeof setTimeout> | undefined
@@ -39,59 +79,54 @@ function Account({ read, signIn, signOut, cancel, refresh, setApiKey, clearApiKe
     finally { setBusy(false) }
   }
   const byKey = state?.credential === 'api-key'
-  return <section className={css.card} aria-label={t('title')}>
-    <div className={css.identity}><strong>{t('title')}</strong><span>shisa</span></div>
-    <div className={css.accountState}><p>{state?.phase === 'ready' ? t('ready') : state?.phase === 'waiting' ? t('waiting') : t('disconnected')} {state?.organization}
-      {state?.phase === 'ready' && state.credential && <span className={css.hint}> · {t(byKey ? 'credentialKey' : 'credentialDevice')}</span>}</p>
-      {state?.phase === 'ready' && <Button disabled={busy} onClick={() => { void run(byKey ? clearApiKey : signOut) }}>{t(byKey ? 'removeApiKey' : 'signOut')}</Button>}</div>
-    {state?.phase === 'waiting' && <div><StateDot state="ongoing" />
-      {state.code && <p>{t('code')}: <code>{state.code}</code></p>}
-      {!state.url && <p>{t('opening')}</p>}
-      {state.url && <>
-        <p>{t('manual')}</p>
-        <a href={state.url} target="_blank" rel="noopener noreferrer">{t('open')}</a>
-        <input aria-label={t('open')} readOnly value={state.url} onFocus={event => event.currentTarget.select()} style={{ width: '100%' }} />
-        <Button onClick={() => { void navigator.clipboard.writeText(state.url!).then(() => setCopied(true), () => setError(t('manual'))) }}>{t(copied ? 'copied' : 'copy')}</Button>
-      </>}
+  const alert = error ?? (state?.phase === 'error' ? state.message : undefined) ?? state?.catalogError
+  return <section className={css.card} aria-label={t('title')} aria-busy={busy}>
+    <header className={css.header}>
+      <div className={css.identity}><strong>{t('title')}</strong><span>shisa</span></div>
+      <StatusTag state={state} t={t} />
+    </header>
+
+    {alert && <p className={css.alert} role="alert">{alert}</p>}
+
+    {state?.phase === 'waiting' && <DeviceWaiting state={state} t={t} busy={busy} copied={copied}
+      onCancel={() => { void run(cancel) }}
+      onCopy={() => { void navigator.clipboard.writeText(state.url!).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }, () => setError(t('manual'))) }} />}
+
+    {state?.phase === 'ready' && <div className={css.body}>
+      <dl className={css.facts}>
+        <div><dt>{t('credential')}</dt><dd><Tag tone="quiet">{t(byKey ? 'credentialKey' : 'credentialDevice')}</Tag></dd></div>
+        {state.baseURL && <div><dt>{t('endpoint')}</dt><dd className={css.mono} title={state.baseURL}>{state.baseURL}</dd></div>}
+        <div><dt>{t('models')}</dt><dd>{state.modelCount} {t('modelCount')}
+          <Button size="sm" variant="ghost" disabled={busy || state.catalogPhase === 'loading'} onClick={() => { void run(refresh) }}>{t('refresh')}</Button>
+        </dd></div>
+      </dl>
+      <ModelList state={state} t={t} />
     </div>}
-    {state?.phase === 'ready' && <details open className={css.catalog}>
-      <summary>{t('catalogConfig')}</summary>
-      {state.baseURL && <dl className={css.endpoint}><dt>{t('baseURL')}</dt><dd>{state.baseURL}</dd></dl>}
-      <div className={css.modelsHead}><span>{t('models')} · {state.modelCount}</span><Button disabled={busy || state.catalogPhase === 'loading'} onClick={() => { void run(refresh) }}>{t('refresh')}</Button></div>
-      <p className={css.hint}>{t('managed')} · {state.modelCount}</p>
-      <ul className={css.modelList}>{state.models?.map(model => <li key={model.id} className={css.modelRow}>
-        <details>
-          <summary className={css.modelSummary}>
-            <span className={css.modelCell} title={model.id}>{model.id}</span>
-            <span className={css.modelCell} title={model.name}>{model.name}</span>
-            <span className={css.chevron} aria-label={t('details')}>›</span>
-          </summary>
-          <dl className={css.modelDetails}>
-            <div><dt>{t('modelId')}</dt><dd>{model.id}</dd></div>
-            {model.contextWindow !== undefined && <div><dt>{t('context')}</dt><dd>{model.contextWindow.toLocaleString()}</dd></div>}
-            {model.maxTokens !== undefined && <div><dt>{t('output')}</dt><dd>{model.maxTokens.toLocaleString()}</dd></div>}
-          </dl>
-        </details>
-      </li>)}</ul>
-    </details>}
-    {state?.catalogError && <p role="alert">{state.catalogError}</p>}
-    {(error || (state?.phase === 'error' && state.message)) && <p role="alert">{error || state?.message}</p>}
-    <details className={css.advanced} open={state !== null && state.phase !== 'ready'}>
+
+    <details className={css.advanced}>
       <summary>{t('advanced')}</summary>
       <p className={css.hint}>{t('apiKeyHint')}</p>
-      <input type="password" aria-label={t('advanced')} placeholder={t('apiKeyPlaceholder')} autoComplete="off" spellCheck={false}
-        value={key} onChange={event => setKey(event.currentTarget.value)} style={{ width: '100%' }} />
+      {state?.phase === 'ready' && !byKey && <p className={css.hint}>{t('replaceWarning')}</p>}
+      <div className={css.keyRow}>
+        <Input type={reveal ? 'text' : 'password'} value={key} placeholder={t('apiKeyPlaceholder')} aria-label={t('advanced')}
+          autoComplete="off" spellCheck={false} onChange={event => setKey(event.currentTarget.value)} />
+        <Button size="sm" variant="ghost" aria-pressed={reveal} onClick={() => setReveal(value => !value)}>{t(reveal ? 'hideKey' : 'showKey')}</Button>
+      </div>
       <div className={css.actions}>
-        {state?.phase === 'ready' && !byKey && <span className={css.hint}>{t('replaceWarning')}</span>}
-        <Button disabled={busy || key.trim().length === 0} onClick={() => { void run(async () => { await setApiKey(key); setKey('') }) }}>{t('saveApiKey')}</Button>
+        <Button size="sm" variant="outline" disabled={busy || key.trim().length === 0}
+          onClick={() => { void run(async () => { await setApiKey(key); setKey(''); setReveal(false) }) }}>{t('saveApiKey')}</Button>
       </div>
     </details>
-    <div className={css.actions}>
-      {state?.phase === 'waiting' ? <Button disabled={busy} onClick={() => { void run(cancel) }}>{t('cancel')}</Button>
-        : state?.phase !== 'ready' && <Button disabled={busy} variant="primary" onClick={() => { setCopied(false); void run(signIn) }}>{t('signIn')}</Button>}
-    </div>
+
+    <footer className={css.actions}>
+      {state?.phase !== 'waiting' && (state?.phase === 'ready'
+        ? <Button size="sm" variant="ghost" disabled={busy} onClick={() => { void run(byKey ? clearApiKey : signOut) }}>{t(byKey ? 'removeApiKey' : 'signOut')}</Button>
+        : <Button size="sm" variant="primary" disabled={busy} onClick={() => { setCopied(false); void run(signIn) }}>{t('signIn')}</Button>)}
+      {state?.phase === 'error' && <Button size="sm" variant="ghost" disabled={busy} onClick={() => { void run(refresh) }}>{t('retry')}</Button>}
+    </footer>
   </section>
 }
+
 /** Official single-slot onboarding, sharing the existing account Remote. */
 function Onboarding({ complete, useApiKey, ...props }: Actions & PropsLocale<'shisa'> & PropsRuntime<'settings.models.sign-in'>) {
   const [leaving, setLeaving] = useState(false)
@@ -110,6 +145,7 @@ function Onboarding({ complete, useApiKey, ...props }: Actions & PropsLocale<'sh
     </div>
   </Modal>
 }
+
 /** Native-shell onboarding uses the same account flow and authenticated Remote. */
 function DesktopOnboarding({ complete, openSection, ...props }: Actions & PropsLocale<'shisa'> & PropsRuntime<'settings.onboarding'>) {
   const [checking, setChecking] = useState(true)
@@ -128,8 +164,10 @@ function DesktopOnboarding({ complete, openSection, ...props }: Actions & PropsL
     complete()
   }} />
 }
+
 /** Services required by the account settings page. */
 export const inject = ['slots', 'locale', 'remote']
+
 /** Mount authenticated Remote contribution and account UI.
  * @param ctx - browser plugin lifetime.
  */
@@ -163,5 +201,5 @@ export function registerAccountUi(scope: Context, actions: Actions): void {
       }, DesktopOnboarding))
     }
     scope.slots.inject('settings.models.sign-in', () => scope.slots.register({ name: 'settings.models.sign-in', priority: -10, locale: 'shisa', inject: () => actions }, Onboarding))
-    scope.slots.inject('settings.models.provider-card', () => scope.slots.register({ name: 'settings.models.provider-card', key: 'shisa-provider', locale: 'shisa', inject: () => actions }, Account))
+    scope.slots.inject('settings.models.provider-card', () => scope.slots.register({ name: 'settings.models.provider-card', key: 'llm-shisa', locale: 'shisa', inject: () => actions }, Account))
 }

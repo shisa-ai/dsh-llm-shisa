@@ -1,0 +1,20 @@
+{
+  // Host-side type checking only: src/client depends on generated Typert
+  // declarations (.d.ts) this repository does not produce yet, so the browser
+  // surface is built but not type-checked. Tracked as a transfer TODO.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": false,
+    "resolveJsonModule": true,
+    "types": ["node"]
+  },
+  "include": ["src/provider/**/*.ts"]
+}

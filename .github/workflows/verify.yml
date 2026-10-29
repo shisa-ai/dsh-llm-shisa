@@ -12,10 +12,12 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --ignore-scripts
+      - run: npm run typecheck
       - run: npm run build
       - run: npm test
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm pack
       - uses: actions/upload-artifact@v4
         with:
-          name: shisa-plugin
+          name: dsh-llm-shisa
           path: '*.tgz'

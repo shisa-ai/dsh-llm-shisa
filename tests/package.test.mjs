@@ -5,9 +5,15 @@ import vm from 'node:vm'
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
 test('one profile bundle installs the provider and client contribution', () => {
  assert.equal(pkg.dsh.bundle.patch, './cordis.patch.yml')
- assert.match(readFileSync('cordis.patch.yml', 'utf8'), /@sabishii-me\/dsh-model-provider-shisa/)
+ const patch = readFileSync('cordis.patch.yml', 'utf8')
+ assert.ok(patch.includes(`name: '${pkg.name}'`), 'bundle patch names this package')
+ assert.ok(patch.includes('id: llm-shisa'), 'bundle patch entry id matches the plugin id convention')
  assert.ok(pkg.dsh.client.inject.includes('@deepseek-ai/dsh-api-remotes'))
  for (const path of Object.values(pkg.exports)) assert.ok(existsSync(path), path)
+})
+test('the package name stays plain so an organization transfer only changes the owner', () => {
+ assert.match(pkg.name, /^dsh-llm-shisa$/)
+ assert.equal(pkg.name.startsWith('@'), false)
 })
 test('browser artifact registers its standalone package identity', () => {
  const entries = []

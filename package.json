@@ -1,12 +1,12 @@
 {
-  "name": "@sabishii-me/dsh-model-provider-shisa",
-  "version": "0.1.2",
-  "description": "Optional Shisa model provider and sign-in UI for DeepSeek Harness",
+  "name": "dsh-llm-shisa",
+  "version": "0.2.0",
+  "description": "Shisa model provider and sign-in UI for DeepSeek Harness",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sabishii-me/dsh-model-provider-shisa.git"
+    "url": "git+https://github.com/sabishii-me/dsh-llm-shisa.git"
   },
   "engines": {
     "node": ">=22.22.0"
@@ -23,11 +23,15 @@
     "src/generated",
     "cordis.patch.yml",
     "LICENSE",
+    "NOTICE.md",
+    "SECURITY.md",
     "README.md"
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
+    "verify": "npm run typecheck && npm run build && npm test",
     "prepack": "npm run build"
   },
   "dsh": {
@@ -44,40 +48,42 @@
     }
   },
   "dependencies": {
-    "zod": "4.4.3"
+    "zod": "^4.6.7"
   },
   "peerDependencies": {
-    "@deepseek-ai/schemastery": "3.18.5-alpha.2",
-    "@deepseek-ai/cordis": "4.0.5-alpha.2",
+    "@deepseek-ai/cordis": "^4.0.5",
     "@deepseek-ai/dsh-authorization": "^0.2.1-0",
     "@deepseek-ai/dsh-credentials": "^0.2.1-0",
-    "@deepseek-ai/dsh-llm-pi-ai": "^0.2.1-0",
     "@deepseek-ai/dsh-llm": "^0.2.1-0",
-    "@deepseek-ai/dsh-typert-protocol": "^0.2.1-0"
+    "@deepseek-ai/dsh-llm-pi-ai": "^0.2.1-0",
+    "@deepseek-ai/dsh-typert-protocol": "^0.2.1-0",
+    "@deepseek-ai/schemastery": "^3.18.5"
   },
   "devDependencies": {
-    "@deepseek-ai/schemastery": "3.18.5-alpha.2",
-    "@deepseek-ai/cordis": "4.0.5-alpha.2",
-    "@deepseek-ai/dsh-authorization": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-credentials": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-llm": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-typert-protocol": "0.2.1-alpha.2",
-    "@deepseek-ai/cordis-plugin-loader": "1.0.6-alpha.2",
-    "@deepseek-ai/dsh-settings": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-agent": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-client-ui-conversation": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-client-ui-session": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-client-locale": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-api-remotes": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-api-session-controller": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-client-ui-tool": "0.2.1-alpha.2",
-    "@deepseek-ai/dsh-client-ui-settings-models": "0.2.1-alpha.2",
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/cordis-plugin-loader": "1.0.6",
+    "@deepseek-ai/dsh-agent": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-api-remotes": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-authorization": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-locale": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-conversation": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-session": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-settings-models": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-tool": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-credentials": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-settings": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "3.18.5",
+    "@types/react": "^18.3.12",
     "esbuild": "0.25.12",
     "lightningcss": "1.30.1",
-    "react": "18.3.1"
+    "react": "18.3.1",
+    "typescript": "^5.9.3"
   }
 }

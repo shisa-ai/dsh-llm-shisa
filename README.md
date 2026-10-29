@@ -1,6 +1,6 @@
-# Shisa model provider for DSH
+# dsh-llm-shisa
 
-Optional Shisa model access and sign-in UI for DeepSeek Harness. Maintained in
+Shisa model access and sign-in UI for DeepSeek Harness. Maintained in
 `sabishii-me`; this is not an official DeepSeek distribution.
 
 ## Scope
@@ -17,8 +17,9 @@ remain in the Host credential store; UI receives only secret-free status.
 
 ## Compatibility and installation
 
-Initial source release targets DSH **0.2.1-alpha.2**. Peer versions are pinned to
-that tested API baseline; compatibility with other versions is not asserted.
+Tested against DSH **0.2.1-rc.2** and the stable `cordis` 4.0.5 / `schemastery`
+3.18.5 baseline. Peer ranges accept any `0.2.1` prerelease or release; other host
+versions are not asserted.
 
 Build a package with Node >=22.22:
 
@@ -29,11 +30,19 @@ npm test
 npm pack
 ```
 
-Install the resulting tarball using DSH's plugin manager in the desired profile.
+Install the resulting tarball through DSH's plugin manager, or from the release
+asset over HTTPS:
+
+```sh
+dsh plugin --profile <name> add https://github.com/<owner>/dsh-llm-shisa/releases/download/v<version>/dsh-llm-shisa-<version>.tgz
+```
+
 The package declares `dsh.bundle` and includes `cordis.patch.yml`, so the normal
-profile bundle mechanism activates it. Do not also enable the older separate
+profile bundle mechanism activates it. **Do not install from a local path**
+(`file:` / `link:`): the desktop shell treats those as disposable development
+links and removes them on the next start. Do not also enable the older separate
 `dsh-experimental-shisa-provider` / `shisa-ui` packages: they own the same service
-and slot registrations. This repository publication does not publish to npm.
+and slot registrations.
 
 ## Authorization and models
 
@@ -49,6 +58,8 @@ and slot registrations. This repository publication does not publish to npm.
   can be retried without silently fabricating models.
 - Model requests use the existing DSH pi-ai adapter, not a new agent loop.
 - Sign-out requests revocation for a device link; an API key is forgotten locally.
+- Catalog `modalities` are projected to pi-ai `input`, so a vision model keeps
+  image input instead of being registered as text-only.
 
 Configuration: `gateway`, `apiKeyCatalogUrl`, `clientVersion`, `requestTimeoutMs`
 (30000 default), and `maxResponseBytes` (1048576 default). Never commit credentials
@@ -57,10 +68,10 @@ or user profiles.
 ## Verification limits
 
 The predecessor integration exercised real device-code issuance and cancellation,
-and desktop runtime slot rendering. User-approved authorization and all catalog /
-model combinations are not certified by that evidence. This standalone repository
-has its own build and package-contract checks; those do not substitute for live
-account acceptance testing.
+and desktop runtime slot rendering. This repository additionally certifies a real
+device authorization, catalog discovery, and a model turn against a 0.2.1-rc.2
+desktop. API-key sign-in is covered by contract tests and a rejected-key probe, not
+by a live accepted key. All catalog / model combinations are not certified.
 
 ## Development
 
@@ -68,7 +79,33 @@ account acceptance testing.
 `src/generated` contains checked-in Typert descriptors from the original Host
 reflection build. If Remote methods or status types change, regenerate these
 using the matching DSH Typert generator and review the wire contract together.
-The standalone build does not currently regenerate descriptors automatically.
+The standalone build does not currently regenerate descriptors automatically, and
+no TypeScript type check runs over `src`; both are tracked in the transfer review.
+
+## Roadmap
+
+Both of the following consume the account owner's resolved key through this
+plugin; neither may become a second credential owner.
+
+- **Speech recognition (ASR)** — DSH already owns the seam: implement
+  `SpeechProvider` (`{ info, transcribe }`) and call `ctx.speechToText.register()`.
+  Shisa exposes `POST /asr/srt/audio_llm` (base64 audio plus a language hint,
+  returning `{ text, language, confidence }`), which matches `SpeechInput`.
+  Requires the `@deepseek-ai/dsh-experimental-speech-to-text` seam, the API bridge
+  and the voice-input UI bundles; declare only languages the route actually
+  accepts, and point `defaultProvider` at this provider.
+- **Image generation** — DSH has no image-generation seam, so this is an agent
+  tool plus `ctx.attachments.saveImages()`, matching how MCP image results become
+  durable attachments. Shisa's route is Gemini-Interactions shaped
+  (`POST https://api.shisa-ai.com/image/v1beta/interactions`, response
+  `steps[].content[]` with base64), not OpenAI `/v1/images/generations`, so it
+  must not be registered as an LLM model. Needs its own response-byte budget and
+  no automatic retry, because a retry duplicates a paid generation.
+
+## Security
+
+See `SECURITY.md` for the reporting address and the threat model this plugin
+assumes.
 
 ## License and provenance
 

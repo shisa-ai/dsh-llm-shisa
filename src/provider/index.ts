@@ -27,10 +27,13 @@ export interface Config {
   maxResponseBytes: number
 }
 /** Credential address owned exclusively by this plugin. */
-export const SHISA_CREDENTIAL = credentialKey('shisa-provider', 'account')
+export const SHISA_CREDENTIAL = credentialKey('llm-shisa', 'account')
 /** Reference the pi-ai adapter resolves per request, whatever supplied it. */
 const API_KEY = credentialRef('SHISA_API_KEY')
-const INSTALL_ID = credentialKey('shisa-provider', 'installation')
+const INSTALL_ID = credentialKey('llm-shisa', 'installation')
+/** Storage identities used before the package was renamed; adopted on first start. */
+const LEGACY_CREDENTIAL = credentialKey('shisa-provider', 'account')
+const LEGACY_INSTALL = credentialKey('shisa-provider', 'installation')
 /** Jouzu's product catalog for plain key accounts, whose gateway base is derived from it. */
 const DEFAULT_API_KEY_CATALOG = 'https://api.shisa.ai/v1/jouzu/model-catalog'
 /** Printable ASCII, no whitespace: keys travel as a bearer value, never a path. */
@@ -67,7 +70,7 @@ export default class ShisaProvider extends TypertRemoteService {
     if (gateway.protocol !== 'https:' || gateway.username || gateway.password || gateway.search || gateway.hash) throw new Error('Shisa gateway must be an HTTPS URL without credentials, query or fragment')
     // Fail at composition time rather than at the first key sign-in.
     baseUrlFromCatalogUrl(config.apiKeyCatalogUrl.get())
-    ctx.llm.registerConfigurableProviders([{ provider: 'shisa', displayName: 'Shisa', settingsNs: ctx.fiber.entry?.options.id ?? 'shisa-provider', settingsPath: [] }])
+    ctx.llm.registerConfigurableProviders([{ provider: 'shisa', displayName: 'Shisa', settingsNs: ctx.fiber.entry?.options.id ?? 'llm-shisa', settingsPath: [] }])
     this.initialization = this.restoreAccount()
     ctx.effect(() => () => { this.lifetime.abort(); return Promise.allSettled([this.initialization, ...(this.active ? [this.active] : []), ...(this.catalogTask ? [this.catalogTask] : [])]) })
     ctx.effect(() => ctx.authorization.registerFlow({
@@ -201,8 +204,30 @@ export default class ShisaProvider extends TypertRemoteService {
     this.status = { phase: 'signed-out', modelCount: 0 }
   }
 
+  /** Adopt credentials saved under the pre-rename key so a rename does not sign users out.
+   * Best effort: a failed move leaves the new key empty and the legacy record untouched.
+   */
+  private async adoptLegacyCredentials(): Promise<void> {
+    const credentials = this.runtime.ctx.credentials
+    const adopt = async (from: typeof SHISA_CREDENTIAL, to: typeof SHISA_CREDENTIAL, subject: string): Promise<void> => {
+      if (await credentials.readRecord(to)) return
+      const legacy = await credentials.readRecord(from)
+      if (!legacy) return
+      await credentials.modifyRecord(to, async () => legacy)
+      await credentials.deleteRecord(from)
+      this.runtime.ctx.logger.info('Shisa %s migrated from its pre-rename credential key', subject)
+    }
+    try {
+      await adopt(LEGACY_CREDENTIAL, SHISA_CREDENTIAL, 'account')
+      await adopt(LEGACY_INSTALL, INSTALL_ID, 'installation identity')
+    } catch (error) {
+      this.runtime.ctx.logger.warn('Shisa credential migration skipped (%s)', error instanceof Error ? error.message : 'unknown')
+    }
+  }
+
   private async restoreAccount(): Promise<void> {
     try {
+      await this.adoptLegacyCredentials()
       const record = await this.runtime.ctx.credentials.readRecord(SHISA_CREDENTIAL)
       if (record?.kind === 'grant') {
         const grant = grantSchema.parse(record.payload)
