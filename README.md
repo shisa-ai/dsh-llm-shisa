@@ -97,8 +97,9 @@ Mirrored on purpose:
   `https://gateway.shisa.ai`;
 - API-key accounts: product catalog `https://api.shisa.ai/v1/jouzu/model-catalog`
   and the inference base derived from it by stripping `/jouzu/model-catalog`;
-- credential precedence: an explicitly supplied key wins over a saved sign-in,
-  while a key that merely mirrors the grant is not an override.
+- credential: a stored key is the credential whether or not a device link
+  exists; the link only decides which endpoints and catalog that key is used
+  against. Setting a key is therefore the override.
 
 Different on purpose: credentials live in the DSH credential store rather than
 `auth.json`, the package is MIT and not Apache-2.0, and the Jouzu CLI is neither

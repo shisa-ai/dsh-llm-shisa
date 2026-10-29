@@ -52,19 +52,6 @@ export function baseUrlFromCatalogUrl(catalogUrl: string): string {
   return url.href.replace(/\/+$/, '')
 }
 
-/** Jouzu gives an explicitly supplied key precedence over a saved sign-in. A key
- * that merely mirrors the grant is this plugin's own copy of it, not an override,
- * so a signed-in account keeps its grant-derived endpoints.
- * @param storedKey - value currently stored for the adapter.
- * @param grantKey - key inside the saved device grant, when one exists.
- * @returns true when the stored key must be used instead of the grant.
- */
-export function apiKeyOverridesGrant(storedKey: string | undefined, grantKey: string | undefined): boolean {
-  if (!storedKey) return false
-  if (!grantKey) return true
-  return storedKey !== grantKey
-}
-
 /** Registers the real Shisa device flow through DSH's authorization service. */
 export default class ShisaProvider extends TypertRemoteService {
   static inject = ['authorization', 'credentials', 'llm', 'typert']
@@ -96,6 +83,9 @@ export default class ShisaProvider extends TypertRemoteService {
           notify: ({ url, code }) => session.notify({ message: 'Authorize this device on Shisa to continue.', url, code }),
           commit: async (grant) => {
             await session.commit({ kind: 'grant', payload: { ...grant, gateway: gateway.href } })
+            // The adapter resolves only this reference, so the issued key must be
+            // effective even when the catalog read that follows never succeeds.
+            await ctx.credentials.set(API_KEY, grant.api_key.secret)
             this.status = { phase: 'ready', credential: 'device', modelCount: 0, catalogPhase: 'idle' }
           },
         })
@@ -151,7 +141,8 @@ export default class ShisaProvider extends TypertRemoteService {
   @Remote
   async cancel(): Promise<void> { this.runtime.ctx.authorization.cancel(SHISA_CREDENTIAL); await this.active }
 
-  /** Validate and store an API key, replacing the device sign-in it supersedes.
+  /** Validate and store an API key. Setting a key is the override: it is used
+   * whether or not a device link exists, and the grant is left alone.
    * @param key - Shisa API key; read back from the catalog before it is persisted.
    * @returns after the catalog is published as the new model generation.
    */
@@ -170,10 +161,6 @@ export default class ShisaProvider extends TypertRemoteService {
       const { models, defaults } = catalogModels(catalog)
       if (!models.length) throw new Error('Shisa returned no available models')
       await this.publish(baseURL, models, defaults, candidate)
-      // One effective credential: a stale device grant would win on next start.
-      await this.runtime.ctx.credentials.deleteRecord(SHISA_CREDENTIAL).catch((error: unknown) => {
-        this.runtime.ctx.logger.warn('Shisa API key saved but the previous device link could not be removed (%s)', error instanceof Error ? error.message : 'unknown')
-      })
       this.status = { phase: 'ready', credential: 'api-key', catalogPhase: 'ready', modelCount: models.length, baseURL, catalogURL: catalogUrl, catalogUpdatedAt: Date.now(),
         models: models.map(model => ({ ...model, name: model.name ?? model.id })) }
     } catch (error) {
@@ -182,7 +169,7 @@ export default class ShisaProvider extends TypertRemoteService {
     }
   }
 
-  /** Forget the stored API key and every model it published.
+  /** Forget the stored API key; a remaining device link takes over again.
    * @returns after the adapter registration is withdrawn.
    */
   @Remote
@@ -192,6 +179,7 @@ export default class ShisaProvider extends TypertRemoteService {
     await this.runtime.ctx.credentials.unset(API_KEY)
     await this.disposeModels()
     this.status = { phase: 'signed-out', modelCount: 0 }
+    await this.restoreAccount()
   }
 
   /** Revoke the saved Shisa device before deleting its credential.
@@ -243,16 +231,11 @@ export default class ShisaProvider extends TypertRemoteService {
       await this.adoptLegacyCredentials()
       const record = await this.runtime.ctx.credentials.readRecord(SHISA_CREDENTIAL)
       const stored = (await this.runtime.ctx.credentials.resolve(API_KEY))?.value?.trim()
-      if (record?.kind === 'grant') {
-        const grant = grantSchema.parse(record.payload)
-        const overridden = apiKeyOverridesGrant(stored, grant.api_key.secret)
-        this.status = { phase: 'ready', credential: overridden ? 'api-key' : 'device', modelCount: 0, catalogPhase: 'idle' }
-        this.startCatalog()
-      } else if (stored) {
-        // A key may outlive the device link, and a key-only account never had one.
-        this.status = { phase: 'ready', credential: 'api-key', modelCount: 0, catalogPhase: 'idle' }
-        this.startCatalog()
-      }
+      if (record?.kind === 'grant') grantSchema.parse(record.payload)
+      // A key works with or without a device link; the link only supplies endpoints.
+      if (!stored && record?.kind !== 'grant') return
+      this.status = { phase: 'ready', credential: stored ? 'api-key' : 'device', modelCount: 0, catalogPhase: 'idle' }
+      this.startCatalog()
     } catch (error) { this.status = { phase: 'error', modelCount: 0, message: error instanceof Error ? error.message : 'Shisa account unavailable' } }
     this.runtime.ctx.logger.info('Shisa provider ready; account %s', this.status.phase)
   }
@@ -281,22 +264,22 @@ export default class ShisaProvider extends TypertRemoteService {
   private async catalogSource(): Promise<{ catalogUrl: string; baseURL: string; apiKey: string; credential: 'device' | 'api-key' }> {
     const record = await this.runtime.ctx.credentials.readRecord(SHISA_CREDENTIAL)
     const stored = (await this.runtime.ctx.credentials.resolve(API_KEY))?.value?.trim()
-    if (record?.kind === 'grant') {
-      const grant = grantSchema.parse(record.payload)
-      // Same precedence as Jouzu: an explicit key wins, a mirrored copy does not.
-      if (!apiKeyOverridesGrant(stored, grant.api_key.secret)) {
-        if (!grant.endpoints) throw new Error('Stored Shisa sign-in has no endpoints; sign in again')
-        const endpoints = json.object({ openai_base_url: json.string().url(), model_catalog_url: json.string().url() }).parse(grant.endpoints)
-        for (const address of Object.values(endpoints)) {
-          const url = new URL(address)
-          if (url.protocol !== 'https:' || url.username || url.password || url.hash) throw new Error('Unsafe model endpoint')
-        }
-        return { catalogUrl: endpoints.model_catalog_url, baseURL: endpoints.openai_base_url, apiKey: grant.api_key.secret, credential: 'device' }
-      }
+    const grant = record?.kind === 'grant' ? grantSchema.parse(record.payload) : undefined
+    // The stored key is the credential, set by the user or by a device sign-in.
+    // A device link only decides which endpoints and catalog the key is used against.
+    const apiKey = stored || grant?.api_key.secret
+    if (!apiKey) throw new Error('Sign in to Shisa or add an API key first')
+    if (!grant) {
+      const catalogUrl = this.config.apiKeyCatalogUrl.get()
+      return { catalogUrl, baseURL: baseUrlFromCatalogUrl(catalogUrl), apiKey, credential: 'api-key' }
     }
-    if (!stored) throw new Error('Sign in to Shisa or add an API key first')
-    const catalogUrl = this.config.apiKeyCatalogUrl.get()
-    return { catalogUrl, baseURL: baseUrlFromCatalogUrl(catalogUrl), apiKey: stored, credential: 'api-key' }
+    if (!grant.endpoints) throw new Error('Stored Shisa sign-in has no endpoints; sign in again')
+    const endpoints = json.object({ openai_base_url: json.string().url(), model_catalog_url: json.string().url() }).parse(grant.endpoints)
+    for (const address of Object.values(endpoints)) {
+      const url = new URL(address)
+      if (url.protocol !== 'https:' || url.username || url.password || url.hash) throw new Error('Unsafe model endpoint')
+    }
+    return { catalogUrl: endpoints.model_catalog_url, baseURL: endpoints.openai_base_url, apiKey, credential: stored ? 'api-key' : 'device' }
   }
 
   /** Read one catalog with a bearer; never echoes the response body in errors.
