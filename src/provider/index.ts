@@ -52,6 +52,19 @@ export function baseUrlFromCatalogUrl(catalogUrl: string): string {
   return url.href.replace(/\/+$/, '')
 }
 
+/** Jouzu gives an explicitly supplied key precedence over a saved sign-in. A key
+ * that merely mirrors the grant is this plugin's own copy of it, not an override,
+ * so a signed-in account keeps its grant-derived endpoints.
+ * @param storedKey - value currently stored for the adapter.
+ * @param grantKey - key inside the saved device grant, when one exists.
+ * @returns true when the stored key must be used instead of the grant.
+ */
+export function apiKeyOverridesGrant(storedKey: string | undefined, grantKey: string | undefined): boolean {
+  if (!storedKey) return false
+  if (!grantKey) return true
+  return storedKey !== grantKey
+}
+
 /** Registers the real Shisa device flow through DSH's authorization service. */
 export default class ShisaProvider extends TypertRemoteService {
   static inject = ['authorization', 'credentials', 'llm', 'typert']
@@ -229,12 +242,13 @@ export default class ShisaProvider extends TypertRemoteService {
     try {
       await this.adoptLegacyCredentials()
       const record = await this.runtime.ctx.credentials.readRecord(SHISA_CREDENTIAL)
+      const stored = (await this.runtime.ctx.credentials.resolve(API_KEY))?.value?.trim()
       if (record?.kind === 'grant') {
         const grant = grantSchema.parse(record.payload)
-        void grant
-        this.status = { phase: 'ready', credential: 'device', modelCount: 0, catalogPhase: 'idle' }
+        const overridden = apiKeyOverridesGrant(stored, grant.api_key.secret)
+        this.status = { phase: 'ready', credential: overridden ? 'api-key' : 'device', modelCount: 0, catalogPhase: 'idle' }
         this.startCatalog()
-      } else if ((await this.runtime.ctx.credentials.resolve(API_KEY))?.value?.trim()) {
+      } else if (stored) {
         // A key may outlive the device link, and a key-only account never had one.
         this.status = { phase: 'ready', credential: 'api-key', modelCount: 0, catalogPhase: 'idle' }
         this.startCatalog()
@@ -266,20 +280,23 @@ export default class ShisaProvider extends TypertRemoteService {
    */
   private async catalogSource(): Promise<{ catalogUrl: string; baseURL: string; apiKey: string; credential: 'device' | 'api-key' }> {
     const record = await this.runtime.ctx.credentials.readRecord(SHISA_CREDENTIAL)
+    const stored = (await this.runtime.ctx.credentials.resolve(API_KEY))?.value?.trim()
     if (record?.kind === 'grant') {
       const grant = grantSchema.parse(record.payload)
-      if (!grant.endpoints) throw new Error('Stored Shisa sign-in has no endpoints; sign in again')
-      const endpoints = json.object({ openai_base_url: json.string().url(), model_catalog_url: json.string().url() }).parse(grant.endpoints)
-      for (const address of Object.values(endpoints)) {
-        const url = new URL(address)
-        if (url.protocol !== 'https:' || url.username || url.password || url.hash) throw new Error('Unsafe model endpoint')
+      // Same precedence as Jouzu: an explicit key wins, a mirrored copy does not.
+      if (!apiKeyOverridesGrant(stored, grant.api_key.secret)) {
+        if (!grant.endpoints) throw new Error('Stored Shisa sign-in has no endpoints; sign in again')
+        const endpoints = json.object({ openai_base_url: json.string().url(), model_catalog_url: json.string().url() }).parse(grant.endpoints)
+        for (const address of Object.values(endpoints)) {
+          const url = new URL(address)
+          if (url.protocol !== 'https:' || url.username || url.password || url.hash) throw new Error('Unsafe model endpoint')
+        }
+        return { catalogUrl: endpoints.model_catalog_url, baseURL: endpoints.openai_base_url, apiKey: grant.api_key.secret, credential: 'device' }
       }
-      return { catalogUrl: endpoints.model_catalog_url, baseURL: endpoints.openai_base_url, apiKey: grant.api_key.secret, credential: 'device' }
     }
-    const apiKey = (await this.runtime.ctx.credentials.resolve(API_KEY))?.value?.trim()
-    if (!apiKey) throw new Error('Sign in to Shisa or add an API key first')
+    if (!stored) throw new Error('Sign in to Shisa or add an API key first')
     const catalogUrl = this.config.apiKeyCatalogUrl.get()
-    return { catalogUrl, baseURL: baseUrlFromCatalogUrl(catalogUrl), apiKey, credential: 'api-key' }
+    return { catalogUrl, baseURL: baseUrlFromCatalogUrl(catalogUrl), apiKey: stored, credential: 'api-key' }
   }
 
   /** Read one catalog with a bearer; never echoes the response body in errors.

@@ -21,7 +21,7 @@ Tested against DSH **0.2.1-rc.2** and the stable `cordis` 4.0.5 / `schemastery`
 3.18.5 baseline. Peer ranges accept any `0.2.1` prerelease or release; other host
 versions are not asserted.
 
-Build a package with Node >=22.22:
+Build a package with Node >=22.19:
 
 ```sh
 npm ci
@@ -79,8 +79,30 @@ by a live accepted key. All catalog / model combinations are not certified.
 `src/generated` contains checked-in Typert descriptors from the original Host
 reflection build. If Remote methods or status types change, regenerate these
 using the matching DSH Typert generator and review the wire contract together.
-The standalone build does not currently regenerate descriptors automatically, and
-no TypeScript type check runs over `src`; both are tracked in the transfer review.
+
+`npm run typecheck` covers the Host surface. The browser surface is built but not
+type-checked, because it depends on generated `.d.ts` declarations this
+repository does not produce yet. `npm run verify` runs typecheck, build and tests.
+
+## Syncing with Jouzu
+
+This plugin follows [shisa-ai/jouzu](https://github.com/shisa-ai/jouzu) as the
+reference implementation of Shisa account handling. Behaviour was last checked
+against Jouzu commit `1ac3257` (`packages/cli/src/shisa-link/`).
+
+Mirrored on purpose:
+
+- device flow: `client_id: jouzu`, `POST /device/code`, `/device/token`,
+  `/device/link/ack`, `/device/link/revoke`, default gateway
+  `https://gateway.shisa.ai`;
+- API-key accounts: product catalog `https://api.shisa.ai/v1/jouzu/model-catalog`
+  and the inference base derived from it by stripping `/jouzu/model-catalog`;
+- credential precedence: an explicitly supplied key wins over a saved sign-in,
+  while a key that merely mirrors the grant is not an override.
+
+Different on purpose: credentials live in the DSH credential store rather than
+`auth.json`, the package is MIT and not Apache-2.0, and the Jouzu CLI is neither
+required nor bundled.
 
 ## Roadmap
 

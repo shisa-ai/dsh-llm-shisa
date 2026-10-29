@@ -4,12 +4,28 @@
   "description": "Shisa model provider and sign-in UI for DeepSeek Harness",
   "type": "module",
   "license": "MIT",
+  "author": "Shisa AI",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "shisa",
+    "llm",
+    "model-provider"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sabishii-me/dsh-llm-shisa.git"
   },
+  "homepage": "https://github.com/sabishii-me/dsh-llm-shisa#readme",
+  "bugs": {
+    "url": "https://github.com/sabishii-me/dsh-llm-shisa/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
-    "node": ">=22.22.0"
+    "node": ">=22.19.0"
   },
   "main": "dist/provider.js",
   "exports": {

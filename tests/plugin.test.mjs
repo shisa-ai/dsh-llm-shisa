@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import { readFileSync } from 'node:fs'
 import { TYPERT } from '../src/generated/typert.host.js'
 import { TYPERT_REMOTE } from '../src/generated/typert.remote-client.js'
-import { baseUrlFromCatalogUrl, SHISA_CREDENTIAL } from '../dist/provider.js'
+import { apiKeyOverridesGrant, baseUrlFromCatalogUrl, SHISA_CREDENTIAL } from '../dist/provider.js'
 
 const hostMethods = () => Object.fromEntries(TYPERT.invocations.map(entry => [entry.method, entry]))
 const remoteMethods = () => Object.fromEntries(TYPERT_REMOTE.descriptors.map(entry => [entry.method, entry]))
@@ -53,4 +53,12 @@ test('the API key never reaches a credential record owned by the flow', () => {
   // flow-owned grant record whose shape carries a link token.
   assert.match(source, /credentials\.set\(API_KEY, apiKey\)/)
   assert.doesNotMatch(source, /credentials\.set\(SHISA_CREDENTIAL/)
+})
+
+test('an explicit key overrides a saved grant; a mirrored copy does not', () => {
+  assert.equal(apiKeyOverridesGrant(undefined, 'grant-key'), false, 'no stored key')
+  assert.equal(apiKeyOverridesGrant('', 'grant-key'), false, 'blank stored key')
+  assert.equal(apiKeyOverridesGrant('grant-key', 'grant-key'), false, 'mirrored copy')
+  assert.equal(apiKeyOverridesGrant('explicit-key', 'grant-key'), true, 'explicit override')
+  assert.equal(apiKeyOverridesGrant('explicit-key', undefined), true, 'key with no grant')
 })
