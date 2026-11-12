@@ -92,6 +92,43 @@ using the matching DSH Typert generator and review the wire contract together.
 type-checked, because it depends on generated `.d.ts` declarations this
 repository does not produce yet. `npm run verify` runs typecheck, build and tests.
 
+## Releasing
+
+Releases are tag-driven; nothing is published from a branch.
+
+1. Merge the change through a pull request. `main` requires the `verify` check,
+   and the protected branch rejects force pushes and deletions.
+2. Set the version in `package.json`, commit it, and merge that through a PR.
+3. Create an **annotated** tag whose name is exactly `v<version>`, then push that
+   one tag:
+
+   ```sh
+   git tag -a v0.2.0 -m "dsh-llm-shisa 0.2.0"
+   git push origin v0.2.0
+   ```
+
+4. Attach the packed tarball to a GitHub release on that tag:
+
+   ```sh
+   npm pack
+   gh release create v0.2.0 dsh-llm-shisa-0.2.0.tgz --title "dsh-llm-shisa 0.2.0" --notes-file release-notes.md
+   ```
+
+   The release asset URL is the supported install source. A local `file:` or
+   `link:` install is disposable and is removed by the desktop shell on restart.
+
+Optional npm publication is manual and gated by
+[`.github/workflows/publish-npm.yml`](.github/workflows/publish-npm.yml). It
+refuses anything that is not an annotated `vX.Y.Z` tag matching `package.json`,
+refuses to overwrite a published version, and publishes the packed tarball with
+provenance. Two pieces of setup live outside the repository:
+
+- a GitHub environment named `npm-publish`;
+- a Trusted Publisher entry on npmjs.com for this repository, workflow
+  `publish-npm.yml`, environment `npm-publish`.
+
+Then `gh workflow run publish-npm.yml -f ref=v0.2.0`.
+
 ## Syncing with Jouzu
 
 This plugin follows [shisa-ai/jouzu](https://github.com/shisa-ai/jouzu) as the
