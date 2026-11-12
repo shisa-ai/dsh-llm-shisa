@@ -10,7 +10,7 @@ import { createModelGeneration, type ModelGeneration } from './models.ts'
 import { catalogModels, catalogSchema } from './catalog.ts'
 import type { AdapterRegistrationHandle } from '@deepseek-ai/dsh-llm'
 import type { PiAiModelProfile } from '@deepseek-ai/dsh-llm-pi-ai'
-import type { ShisaStatus } from './types.ts'
+import type { ShisaPrice, ShisaStatus } from './types.ts'
 import { credentialKey, credentialRef } from '@deepseek-ai/dsh-credentials'
 import type {} from '@deepseek-ai/dsh-authorization'
 import type {} from '@deepseek-ai/cordis-plugin-loader'
@@ -36,6 +36,9 @@ const LEGACY_CREDENTIAL = credentialKey('shisa-provider', 'account')
 const LEGACY_INSTALL = credentialKey('shisa-provider', 'installation')
 /** Jouzu's product catalog for plain key accounts, whose gateway base is derived from it. */
 const DEFAULT_API_KEY_CATALOG = 'https://api.shisa.ai/v1/jouzu/model-catalog'
+
+/** The gateway rejected the stored credential; retrying cannot fix it. */
+class RejectedCredentialError extends Error {}
 /** Printable ASCII, no whitespace: keys travel as a bearer value, never a path. */
 const API_KEY_PATTERN = /^[\x21-\x7e]{16,8192}$/
 
@@ -50,6 +53,32 @@ export function baseUrlFromCatalogUrl(catalogUrl: string): string {
   else if (url.pathname.endsWith('/model-catalog')) url.pathname = url.pathname.slice(0, -'/model-catalog'.length)
   else url.pathname = '/v1'
   return url.href.replace(/\/+$/, '')
+}
+
+/** Project published profiles into the secret-free rows the settings table shows.
+ * @param models - profiles handed to the adapter.
+ * @param defaults - thinking level the catalog selects per model, when it declares one.
+ * @param prices - published per-1M-token rate keyed by model id.
+ * @returns one row per model, carrying the capabilities the catalog declared.
+ */
+function statusModels(models: readonly PiAiModelProfile[], defaults: ReadonlyMap<string, string>, prices: ReadonlyMap<string, ShisaPrice>): NonNullable<ShisaStatus['models']> {
+  return models.map((model) => {
+    const reasoning = model.reasoningEfforts === false || model.reasoningEfforts === undefined
+      ? undefined
+      : Object.keys(model.reasoningEfforts)
+    const reasoningDefault = defaults.get(model.id)
+    const price = prices.get(model.id)
+    return {
+      id: model.id,
+      name: model.name ?? model.id,
+      ...(model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow }),
+      ...(model.maxTokens === undefined ? {} : { maxTokens: model.maxTokens }),
+      ...(model.input === undefined ? {} : { input: model.input }),
+      ...(reasoning === undefined || reasoning.length === 0 ? {} : { reasoning }),
+      ...(reasoningDefault === undefined ? {} : { reasoningDefault }),
+      ...(price === undefined ? {} : { price }),
+    }
+  })
 }
 
 /** Registers the real Shisa device flow through DSH's authorization service. */
@@ -158,51 +187,46 @@ export default class ShisaProvider extends TypertRemoteService {
     try {
       // Probe before persisting: a rejected key must never displace a working one.
       const catalog = await this.fetchCatalog(catalogUrl, candidate)
-      const { models, defaults } = catalogModels(catalog)
+      const { models, defaults, prices, skipped } = catalogModels(catalog)
+      this.reportSkipped(skipped)
       if (!models.length) throw new Error('Shisa returned no available models')
       await this.publish(baseURL, models, defaults, candidate)
       this.status = { phase: 'ready', credential: 'api-key', catalogPhase: 'ready', modelCount: models.length, baseURL, catalogURL: catalogUrl, catalogUpdatedAt: Date.now(),
-        models: models.map(model => ({ ...model, name: model.name ?? model.id })) }
+        models: statusModels(models, defaults, prices) }
     } catch (error) {
       this.status = { ...this.status, catalogPhase: 'error', catalogError: error instanceof Error ? error.message : 'Shisa API key was rejected' }
       throw error
     }
   }
 
-  /** Forget the stored API key; a remaining device link takes over again.
-   * @returns after the adapter registration is withdrawn.
-   */
-  @Remote
-  async clearApiKey(): Promise<void> {
-    await this.cancel()
-    await this.catalogTask
-    await this.runtime.ctx.credentials.unset(API_KEY)
-    await this.disposeModels()
-    this.status = { phase: 'signed-out', modelCount: 0 }
-    await this.restoreAccount()
-  }
-
-  /** Revoke the saved Shisa device before deleting its credential.
-   * @returns after server revocation and local credential removal.
+  /** End the local session. A gateway that cannot revoke the link first does not
+   * block the sign-out: the device stays linked on Shisa's side, and that is
+   * reported in the status instead of leaving the user connected against their will.
+   * @returns after the credential and every published model are gone.
    */
   @Remote
   async signOut(): Promise<void> {
     await this.cancel()
     await this.catalogTask
+    let warning: string | undefined
     const record = await this.runtime.ctx.credentials.readRecord(SHISA_CREDENTIAL)
     if (record?.kind === 'grant') {
-      const grant = grantSchema.parse(record.payload)
-      const response = await fetch(this.config.gateway.get().replace(/\/+$/, '') + '/device/link/revoke', {
-        method: 'POST', redirect: 'error', headers: { authorization: `Bearer ${grant.link_token}` },
-        signal: AbortSignal.any([this.lifetime.signal, AbortSignal.timeout(this.config.requestTimeoutMs)]),
-      })
-      await response.body?.cancel()
-      if (response.status !== 204) throw new Error(`Shisa revocation failed (HTTP ${response.status}); credential retained`)
+      try {
+        const grant = grantSchema.parse(record.payload)
+        const response = await fetch(this.config.gateway.get().replace(/\/+$/, '') + '/device/link/revoke', {
+          method: 'POST', redirect: 'error', headers: { authorization: `Bearer ${grant.link_token}` },
+          signal: AbortSignal.any([this.lifetime.signal, AbortSignal.timeout(this.config.requestTimeoutMs)]),
+        })
+        await response.body?.cancel()
+        if (response.status !== 204) warning = `Shisa revocation failed (HTTP ${response.status}); the device may still be linked.`
+      } catch {
+        warning = 'Shisa revocation failed; the device may still be linked.'
+      }
       await this.runtime.ctx.credentials.deleteRecord(SHISA_CREDENTIAL)
     }
     await this.runtime.ctx.credentials.unset(API_KEY)
     await this.disposeModels()
-    this.status = { phase: 'signed-out', modelCount: 0 }
+    this.status = { phase: 'signed-out', modelCount: 0, ...(warning === undefined ? {} : { message: warning }) }
   }
 
   /** Adopt credentials saved under the pre-rename key so a rename does not sign users out.
@@ -240,12 +264,16 @@ export default class ShisaProvider extends TypertRemoteService {
     this.runtime.ctx.logger.info('Shisa provider ready; account %s', this.status.phase)
   }
 
-  /** Retry model discovery without reauthorizing the signed-in account. */
+  /** Re-read models for the current account.
+   * A connected account reloads its catalog; any other state re-derives the
+   * account first, so the UI's retry path is not a no-op after a cleared credential.
+   */
   @Remote
   async refreshModels(): Promise<void> {
     await this.initialization
-    if (this.status.phase !== 'ready') throw new Error('Sign in before loading models')
-    this.startCatalog()
+    if (this.status.phase === 'waiting') throw new Error('Shisa sign-in is still running')
+    if (this.status.phase === 'ready') { this.startCatalog(); return }
+    await this.restoreAccount()
   }
 
   private startCatalog(): void {
@@ -253,8 +281,18 @@ export default class ShisaProvider extends TypertRemoteService {
     this.status = { ...this.status, catalogPhase: 'loading', catalogError: '' }
     this.catalogTask = this.loadCatalog().then(() => {
       this.status = { ...this.status, catalogPhase: 'ready' }
-    }, () => {
-      this.status = { ...this.status, catalogPhase: 'error', catalogError: 'Model loading failed. Retry without signing in again.' }
+    }, async (error: unknown) => {
+      // A rejected credential can never succeed on retry: drop it locally so the
+      // user gets a sign-in path back instead of a ready account that only errors.
+      if (error instanceof RejectedCredentialError) {
+        await this.forgetRejectedAccount(error.message)
+        return
+      }
+      // Keep the cause: unreachable gateway and bad catalog need different actions.
+      const message = error instanceof Error && error.message.length > 0
+        ? error.message
+        : 'Model loading failed. Retry without signing in again.'
+      this.status = { ...this.status, catalogPhase: 'error', catalogError: message }
     }).finally(() => { this.catalogTask = undefined })
   }
 
@@ -295,7 +333,7 @@ export default class ShisaProvider extends TypertRemoteService {
     })
     if (!response.ok) {
       await response.body?.cancel()
-      if (response.status === 401 || response.status === 403) throw new Error('Shisa rejected this API key')
+      if (response.status === 401 || response.status === 403) throw new RejectedCredentialError('Shisa rejected this API key')
       throw new Error(`Shisa catalog unavailable (HTTP ${response.status})`)
     }
     const parsed = catalogSchema.safeParse(await readBoundedJson(response, this.config.maxResponseBytes))
@@ -305,10 +343,11 @@ export default class ShisaProvider extends TypertRemoteService {
 
   private async loadCatalog(): Promise<void> {
     const source = await this.catalogSource()
-    const { models, defaults } = catalogModels(await this.fetchCatalog(source.catalogUrl, source.apiKey))
+    const { models, defaults, prices, skipped } = catalogModels(await this.fetchCatalog(source.catalogUrl, source.apiKey))
+    this.reportSkipped(skipped)
     if (!models.length) throw new Error('Shisa returned no available models')
     await this.publish(source.baseURL, models, defaults, source.apiKey)
-    this.status = { ...this.status, credential: source.credential, modelCount: models.length, models: models.map(model => ({ ...model, name: model.name ?? model.id })), baseURL: source.baseURL, catalogURL: source.catalogUrl, catalogUpdatedAt: Date.now() }
+    this.status = { ...this.status, credential: source.credential, modelCount: models.length, models: statusModels(models, defaults, prices), baseURL: source.baseURL, catalogURL: source.catalogUrl, catalogUpdatedAt: Date.now() }
   }
 
   /** Publish one immutable catalog generation through the official pi-ai adapter.
@@ -334,6 +373,27 @@ export default class ShisaProvider extends TypertRemoteService {
     }
   }
 
+  /** Drop a credential the gateway rejected so sign-in becomes reachable again.
+   * @param reason - gateway message to keep in the visible status.
+   */
+  private async forgetRejectedAccount(reason: string): Promise<void> {
+    await this.runtime.ctx.credentials.deleteRecord(SHISA_CREDENTIAL).catch((cause: unknown) => {
+      this.runtime.ctx.logger.warn('Shisa rejected the credential but the device link could not be cleared (%s)', cause instanceof Error ? cause.message : 'unknown')
+    })
+    await this.runtime.ctx.credentials.unset(API_KEY).catch(() => { /* Already absent. */ })
+    await this.disposeModels()
+    this.status = { phase: 'error', modelCount: 0, message: `${reason}. The saved credential was removed; sign in again.` }
+    this.runtime.ctx.logger.warn('Shisa credential was rejected by the gateway; cleared it locally')
+  }
+
+  /** Name the catalog entries that cannot serve a DSH request, with the reason.
+   * @param skipped - model ids filtered out while projecting the catalog.
+   */
+  private reportSkipped(skipped: readonly string[]): void {
+    if (skipped.length === 0) return
+    this.runtime.ctx.logger.warn('Shisa catalog skipped %d model(s) with no capability declaration; their backends reject tool calls: %s', skipped.length, skipped.join(', '))
+  }
+
   /** Withdraw the adapter and settle every retired generation. */
   private async disposeModels(): Promise<void> {
     this.registration?.()
@@ -349,3 +409,5 @@ export default class ShisaProvider extends TypertRemoteService {
 declare module '@deepseek-ai/cordis' {
   interface Context { shisaProvider: ShisaProvider }
 }
+
+export { catalogModels }

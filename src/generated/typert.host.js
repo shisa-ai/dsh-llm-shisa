@@ -21,6 +21,18 @@ const _deepseek_ai_dsh_experimental_shisa_provider_shisa_getState_result$schema 
   'name': z.string(),
   'contextWindow': z.number().optional(),
   'maxTokens': z.number().optional(),
+  'input': z.array(z.union([z.literal("text"), z.literal("image")])).optional(),
+  'reasoning': z.array(z.string()).optional(),
+  'reasoningDefault': z.string().optional(),
+  'price': z.object({
+  'input': z.number().optional(),
+  'output': z.number().optional(),
+  'currency': z.string(),
+  'unit': z.string(),
+  'scope': z.string().optional(),
+  'checkedAt': z.string().optional(),
+  'url': z.string().optional(),
+}).optional(),
 })).optional(),
   'modelCount': z.number(),
 }))
@@ -30,8 +42,6 @@ let _deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema$valu
 const _deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema$value ??= z.void())
 let _deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema$value
 const _deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema$value ??= z.void())
-let _deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema$value
-const _deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema$value ??= z.void())
 let _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema$value
 const _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema = () => (_deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_parameter_0$schema$value ??= z.string())
 let _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema$value
@@ -56,7 +66,7 @@ export const TYPERT = {
         typeSymbol: 'dsh-llm-shisa#shisa/cancel:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_cancel_result$schema,
       },
-      sourceLocation: {"file":"src/provider/index.ts","line":139,"column":3},
+      sourceLocation: {"file":"src/provider/index.ts","line":171,"column":3},
     },
     {
       id: 'dsh-llm-shisa#shisa/getState',
@@ -71,7 +81,7 @@ export const TYPERT = {
         typeSymbol: 'dsh-llm-shisa/types#ShisaStatus',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_getState_result$schema,
       },
-      sourceLocation: {"file":"src/provider/index.ts","line":107,"column":3},
+      sourceLocation: {"file":"src/provider/index.ts","line":139,"column":3},
     },
     {
       id: 'dsh-llm-shisa#shisa/refreshModels',
@@ -86,7 +96,7 @@ export const TYPERT = {
         typeSymbol: 'dsh-llm-shisa#shisa/refreshModels:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_refreshModels_result$schema,
       },
-      sourceLocation: {"file":"src/provider/index.ts","line":248,"column":3},
+      sourceLocation: {"file":"src/provider/index.ts","line":272,"column":3},
     },
     {
       id: 'dsh-llm-shisa#shisa/signIn',
@@ -101,7 +111,7 @@ export const TYPERT = {
         typeSymbol: 'dsh-llm-shisa#shisa/signIn:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_signIn_result$schema,
       },
-      sourceLocation: {"file":"src/provider/index.ts","line":116,"column":3},
+      sourceLocation: {"file":"src/provider/index.ts","line":148,"column":3},
     },
     {
       id: 'dsh-llm-shisa#shisa/signOut',
@@ -116,7 +126,7 @@ export const TYPERT = {
         typeSymbol: 'dsh-llm-shisa#shisa/signOut:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_signOut_result$schema,
       },
-      sourceLocation: {"file":"src/provider/index.ts","line":188,"column":3},
+      sourceLocation: {"file":"src/provider/index.ts","line":208,"column":3},
     },
     {
       id: 'dsh-llm-shisa#shisa/setApiKey',
@@ -149,22 +159,7 @@ export const TYPERT = {
         typeSymbol: 'dsh-llm-shisa#shisa/setApiKey:result',
         create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_setApiKey_result$schema,
       },
-      sourceLocation: {"file":"src/provider/index.ts","line":146,"column":3},
-    },
-    {
-      id: 'dsh-llm-shisa#shisa/clearApiKey',
-      service: 'shisaProvider',
-      namespace: 'shisa',
-      method: 'clearApiKey',
-      invocation: { kind: 'direct' },
-      parameters: [
-      ],
-      result: {
-        mode: 'strict',
-        typeSymbol: 'dsh-llm-shisa#shisa/clearApiKey:result',
-        create: _deepseek_ai_dsh_experimental_shisa_provider_shisa_clearApiKey_result$schema,
-      },
-      sourceLocation: {"file":"src/provider/index.ts","line":176,"column":3},
+      sourceLocation: {"file":"src/provider/index.ts","line":179,"column":3},
     },
   ],
   model: {
@@ -218,13 +213,6 @@ export const TYPERT = {
             "signature": "@Remote async setApiKey(key: string): Promise<void>",
             "summary": "Validate and store an API key, replacing the device sign-in it supersedes.",
             "jsDoc": "/** Validate and store an API key, replacing the device sign-in it supersedes.\r\n * @param key - Shisa API key; read back from the catalog before it is persisted.\r\n * @returns after the catalog is published as the new model generation.\r\n */"
-          },
-          {
-            "kind": "method",
-            "name": "clearApiKey",
-            "signature": "@Remote async clearApiKey(): Promise<void>",
-            "summary": "Forget the stored API key and every model it published.",
-            "jsDoc": "/** Forget the stored API key and every model it published.\r\n * @returns after the adapter registration is withdrawn.\r\n */"
           }
         ],
         "types": [

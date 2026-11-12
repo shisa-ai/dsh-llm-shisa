@@ -52,14 +52,22 @@ and slot registrations.
   key is sent once to `https://api.shisa.ai/v1/jouzu/model-catalog` before anything
   is persisted, so a rejected key never displaces a working credential; the
   gateway base is derived from that catalog address (`https://api.shisa.ai/v1`).
-  Saving a key supersedes the device link on this machine.
+  A stored key is the credential whether or not a device link exists; the link
+  only decides which endpoints and catalog it is used against.
 - Cancellation stops the pending authorization attempt.
-- Model discovery is separate from authorization. Discovery failure is shown and
-  can be retried without silently fabricating models.
+- Model discovery is separate from authorization. Discovery failure is shown with
+  its real cause and can be retried without silently fabricating models. A
+  credential the gateway rejects is removed locally so sign-in becomes reachable
+  again, instead of leaving an account that can only fail.
 - Model requests use the existing DSH pi-ai adapter, not a new agent loop.
-- Sign-out requests revocation for a device link; an API key is forgotten locally.
+- Sign-out always ends the session locally. Revocation is best effort: a gateway
+  that cannot revoke the link still gets the local credential cleared, and the
+  status says the device may remain linked.
 - Catalog `modalities` are projected to pi-ai `input`, so a vision model keeps
   image input instead of being registered as text-only.
+- Catalog entries that declare no `capabilities` at all are not published: DSH
+  sends tool definitions on every request, and those backends answer `400`. They
+  are reported in the log by id so the gap is visible rather than silent.
 
 Configuration: `gateway`, `apiKeyCatalogUrl`, `clientVersion`, `requestTimeoutMs`
 (30000 default), and `maxResponseBytes` (1048576 default). Never commit credentials

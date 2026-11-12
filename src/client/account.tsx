@@ -12,10 +12,10 @@ import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots
 import type { ShisaStatus } from '../provider/types.ts'
 import css from './account.module.css'
 
-const en = { title: 'Shisa', description: 'Use Shisa models in DSH. Browser authorization uses the Jouzu client identity.', signIn: 'Sign in with Shisa', signOut: 'Sign out', cancel: 'Cancel sign-in', removeApiKey: 'Forget key', retry: 'Retry', waiting: 'Waiting for browser approval', ready: 'Connected', disconnected: 'Not connected', failed: 'Unavailable', code: 'Verification code', open: 'Open authorization page', copy: 'Copy authorization link', copied: 'Link copied', opening: 'Requesting authorization link…', manual: 'Open this link in any browser, or copy it to another browser or device. Keep this page open while approving.', credential: 'Credential', credentialDevice: 'Device link', credentialKey: 'API key', endpoint: 'Endpoint', models: 'Models', modelCount: 'models', refresh: 'Refresh', noModels: 'No models published yet', contextShort: 'context', outputShort: 'output', advanced: 'Advanced: use an API key', apiKeyHint: 'Paste a Shisa API key instead of approving a device. It is checked against the model catalog before it is stored, and never leaves this machine afterwards.', apiKeyPlaceholder: 'shsk:…', saveApiKey: 'Save key', replaceWarning: 'Saving a key replaces the current device link on this machine.', showKey: 'Show key', hideKey: 'Hide key', onboarding: 'Connect a model to get started', apiKey: 'Use a DeepSeek API key', later: 'Configure later' } as const
-const zh: Record<keyof typeof en, string> = { title: 'Shisa', description: '在 DSH 中使用 Shisa 模型。浏览器授权使用 Jouzu 客户端身份。', signIn: '登录 Shisa', signOut: '退出登录', cancel: '取消登录', removeApiKey: '清除 key', retry: '重试', waiting: '等待浏览器授权', ready: '已连接', disconnected: '未连接', failed: '不可用', code: '验证码', open: '打开授权页面', copy: '复制授权链接', copied: '链接已复制', opening: '正在获取授权地址…', manual: '可在任意浏览器打开此地址，或复制到其他浏览器、设备。授权期间请保持本页打开。', credential: '凭据', credentialDevice: '设备授权', credentialKey: 'API key', endpoint: '接口地址', models: '模型', modelCount: '个模型', refresh: '刷新', noModels: '还没有发布任何模型', contextShort: '上下文', outputShort: '输出', advanced: '高级：直接使用 API key', apiKeyHint: '粘贴 Shisa API key，跳过设备授权。保存前会先用它读一次模型目录；之后 key 只留在这台机器上。', apiKeyPlaceholder: 'shsk:…', saveApiKey: '保存 key', replaceWarning: '保存 key 会取代本机当前的设备授权。', showKey: '显示', hideKey: '隐藏', onboarding: '连接模型，开始使用', apiKey: '使用 DeepSeek API key', later: '稍后配置' }
+const en = { title: 'Shisa', description: 'Use Shisa models in DSH. Browser authorization uses the Jouzu client identity.', signIn: 'Sign in with Shisa', signOut: 'Sign out', cancel: 'Cancel sign-in', retry: 'Retry', waiting: 'Waiting for browser approval', ready: 'Connected', disconnected: 'Not connected', failed: 'Unavailable', code: 'Verification code', open: 'Open authorization page', copy: 'Copy authorization link', copied: 'Link copied', opening: 'Requesting authorization link…', manual: 'Open this link in any browser, or copy it to another browser or device. Keep this page open while approving.', credentialDevice: 'Device link', credentialKey: 'API key', endpoint: 'Endpoint', models: 'Models', refresh: 'Refresh', noModels: 'No models published yet', contextShort: 'context', outputShort: 'output', advanced: 'Advanced: use an API key', apiKeyHint: 'Paste a Shisa API key instead of approving a device. It is checked against the model catalog before it is stored, and never leaves this machine afterwards.', apiKeyPlaceholder: 'shsk:…', saveApiKey: 'Save key', replaceWarning: 'A saved key is used instead of the device link; the link itself stays saved.', showKey: 'Show key', hideKey: 'Hide key', modelCol: 'Model', inputCol: 'Input', priceCol: 'Price', visionInput: 'text + image', textInput: 'text', reasoningTag: 'reasoning', signedOutHint: 'No account is connected. Sign in to load models.', onboarding: 'Connect a model to get started', apiKey: 'Use a DeepSeek API key', later: 'Configure later' } as const
+const zh: Record<keyof typeof en, string> = { title: 'Shisa', description: '在 DSH 中使用 Shisa 模型。浏览器授权使用 Jouzu 客户端身份。', signIn: '登录 Shisa', signOut: '退出登录', cancel: '取消登录', retry: '重试', waiting: '等待浏览器授权', ready: '已连接', disconnected: '未连接', failed: '不可用', code: '验证码', open: '打开授权页面', copy: '复制授权链接', copied: '链接已复制', opening: '正在获取授权地址…', manual: '可在任意浏览器打开此地址，或复制到其他浏览器、设备。授权期间请保持本页打开。', credentialDevice: '设备授权', credentialKey: 'API key', endpoint: '接口地址', models: '模型', refresh: '刷新', noModels: '还没有发布任何模型', contextShort: '上下文', outputShort: '输出', advanced: '高级：直接使用 API key', apiKeyHint: '粘贴 Shisa API key，跳过设备授权。保存前会先用它读一次模型目录；之后 key 只留在这台机器上。', apiKeyPlaceholder: 'shsk:…', saveApiKey: '保存 key', replaceWarning: '保存 key 后优先使用 key，设备授权仍保留。', showKey: '显示', hideKey: '隐藏', modelCol: '模型', inputCol: '输入', priceCol: '价格', visionInput: '文本 + 图片', textInput: '文本', reasoningTag: '可推理', signedOutHint: '当前未连接账号，登录后会加载模型。', onboarding: '连接模型，开始使用', apiKey: '使用 DeepSeek API key', later: '稍后配置' }
 declare module '@deepseek-ai/dsh-client-ui-slots' { interface LocaleNamespaceMap { shisa: keyof typeof en } }
-interface Actions { read: () => Promise<ShisaStatus>; signIn: () => Promise<void>; signOut: () => Promise<void>; cancel: () => Promise<void>; refresh: () => Promise<void>; setApiKey: (key: string) => Promise<void>; clearApiKey: () => Promise<void> }
+interface Actions { read: () => Promise<ShisaStatus>; signIn: () => Promise<void>; signOut: () => Promise<void>; cancel: () => Promise<void>; refresh: () => Promise<void>; setApiKey: (key: string) => Promise<void> }
 type Tone = 'success' | 'danger' | 'info' | 'outline'
 
 /** One status pill: the only place the account phase is named. */
@@ -41,21 +41,41 @@ function DeviceWaiting({ state, t, onCancel, busy, onCopy, copied }: { state: Sh
   </div>
 }
 
-/** Published models, with the detail a picker needs and nothing more. */
+/** Published models as a real table: one cell per fact, with column headers. */
 function ModelList({ state, t }: { state: ShisaStatus; t: PropsLocale<'shisa'>['t'] }) {
   const models = state.models ?? []
   if (!models.length) return <p className={css.hint}>{t('noModels')}</p>
-  return <ul className={css.modelList}>{models.map(model => <li key={model.id} className={css.modelRow}>
-    <span className={css.modelName} title={model.name}>{model.name ?? model.id}</span>
-    <span className={css.modelId} title={model.id}>{model.id}</span>
-    <span className={css.modelLimits}>
-      {model.contextWindow !== undefined && <span title={t('contextShort')}>{model.contextWindow.toLocaleString()}</span>}
-      {model.maxTokens !== undefined && <span title={t('outputShort')}>{model.maxTokens.toLocaleString()}</span>}
-    </span>
-  </li>)}</ul>
+  return <div className={css.modelTable}>
+    <div className={`${css.modelCols} ${css.modelHead}`}>
+      <span>{t('modelCol')}</span>
+      <span>{t('inputCol')}</span>
+      <span>{t('priceCol')}</span>
+      <span className={css.modelNum}>{t('contextShort')}</span>
+      <span className={css.modelNum}>{t('outputShort')}</span>
+    </div>
+    <ul className={css.modelList}>{models.map(model => <li key={model.id} className={css.modelRow}>
+      <span className={css.modelMain}>
+        <span className={css.modelNameRow}>
+          <span className={css.modelName} title={model.name}>{model.name}</span>
+          {model.reasoning?.length ? (
+            <span title={model.reasoningDefault ? `${model.reasoning.join(', ')} · default ${model.reasoningDefault}` : model.reasoning.join(', ')}>
+              <Tag tone={model.reasoningDefault ? 'info' : 'quiet'}>{model.reasoningDefault ?? t('reasoningTag')}</Tag>
+            </span>
+          ) : null}
+        </span>
+        <span className={css.modelId} title={model.id}>{model.id}</span>
+      </span>
+      <span className={css.modelInput}>{model.input?.includes('image') ? t('visionInput') : t('textInput')}</span>
+      <span className={css.modelPrice} title={model.price ? [model.price.currency, model.price.unit, model.price.scope, model.price.url].filter(Boolean).join(' · ') : undefined}>
+        {model.price ? `${model.price.input ?? '—'} / ${model.price.output ?? '—'}` : '—'}
+      </span>
+      <span className={css.modelNum} title={t('contextShort')}>{model.contextWindow?.toLocaleString() ?? '—'}</span>
+      <span className={css.modelNum} title={t('outputShort')}>{model.maxTokens?.toLocaleString() ?? '—'}</span>
+    </li>)}</ul>
+  </div>
 }
 
-function Account({ read, signIn, signOut, cancel, refresh, setApiKey, clearApiKey, t, onReady }: Actions & { onReady?: () => void } & PropsLocale<'shisa'>) {
+function Account({ read, signIn, signOut, cancel, refresh, setApiKey, t, onReady }: Actions & { onReady?: () => void } & PropsLocale<'shisa'>) {
   const [state, setState] = useState<ShisaStatus | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -79,12 +99,12 @@ function Account({ read, signIn, signOut, cancel, refresh, setApiKey, clearApiKe
     finally { setBusy(false) }
   }
   const byKey = state?.credential === 'api-key'
-  const alert = error ?? (state?.phase === 'error' ? state.message : undefined) ?? state?.catalogError
-  return <section className={css.card} aria-label={t('title')} aria-busy={busy}>
-    <header className={css.header}>
-      <div className={css.identity}><strong>{t('title')}</strong><span>shisa</span></div>
+  const alert = error ?? (state?.phase === 'error' || state?.phase === 'signed-out' ? state.message : undefined) ?? state?.catalogError
+  return <section className={css.root} aria-label={t('title')} aria-busy={busy}>
+    <div className={css.statusRow}>
       <StatusTag state={state} t={t} />
-    </header>
+      {state?.phase === 'ready' && state.credential && <span>· {t(byKey ? 'credentialKey' : 'credentialDevice')}</span>}
+    </div>
 
     {alert && <p className={css.alert} role="alert">{alert}</p>}
 
@@ -92,16 +112,16 @@ function Account({ read, signIn, signOut, cancel, refresh, setApiKey, clearApiKe
       onCancel={() => { void run(cancel) }}
       onCopy={() => { void navigator.clipboard.writeText(state.url!).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }, () => setError(t('manual'))) }} />}
 
-    {state?.phase === 'ready' && <div className={css.body}>
-      <dl className={css.facts}>
-        <div><dt>{t('credential')}</dt><dd><Tag tone="quiet">{t(byKey ? 'credentialKey' : 'credentialDevice')}</Tag></dd></div>
-        {state.baseURL && <div><dt>{t('endpoint')}</dt><dd className={css.mono} title={state.baseURL}>{state.baseURL}</dd></div>}
-        <div><dt>{t('models')}</dt><dd>{state.modelCount} {t('modelCount')}
+    {state?.phase === 'ready' && <>
+      {state.baseURL && <p className={css.endpoint}><span>{t('endpoint')}</span><code title={state.baseURL}>{state.baseURL}</code></p>}
+      <div className={css.models}>
+        <div className={css.modelsHead}>
+          <span>{t('models')} · {state.modelCount}</span>
           <Button size="sm" variant="ghost" disabled={busy || state.catalogPhase === 'loading'} onClick={() => { void run(refresh) }}>{t('refresh')}</Button>
-        </dd></div>
-      </dl>
-      <ModelList state={state} t={t} />
-    </div>}
+        </div>
+        <ModelList state={state} t={t} />
+      </div>
+    </>}
 
     <details className={css.advanced}>
       <summary>{t('advanced')}</summary>
@@ -112,18 +132,20 @@ function Account({ read, signIn, signOut, cancel, refresh, setApiKey, clearApiKe
           autoComplete="off" spellCheck={false} onChange={event => setKey(event.currentTarget.value)} />
         <Button size="sm" variant="ghost" aria-pressed={reveal} onClick={() => setReveal(value => !value)}>{t(reveal ? 'hideKey' : 'showKey')}</Button>
       </div>
-      <div className={css.actions}>
+      <div className={css.footer}>
         <Button size="sm" variant="outline" disabled={busy || key.trim().length === 0}
           onClick={() => { void run(async () => { await setApiKey(key); setKey(''); setReveal(false) }) }}>{t('saveApiKey')}</Button>
       </div>
     </details>
 
-    <footer className={css.actions}>
+    {state?.phase !== 'ready' && state?.phase !== 'waiting' && <p className={css.hint}>{t('signedOutHint')}</p>}
+
+    <div className={css.footer}>
       {state?.phase !== 'waiting' && (state?.phase === 'ready'
-        ? <Button size="sm" variant="ghost" disabled={busy} onClick={() => { void run(byKey ? clearApiKey : signOut) }}>{t(byKey ? 'removeApiKey' : 'signOut')}</Button>
+        ? <Button size="sm" variant="ghost" disabled={busy} onClick={() => { void run(signOut) }}>{t('signOut')}</Button>
         : <Button size="sm" variant="primary" disabled={busy} onClick={() => { setCopied(false); void run(signIn) }}>{t('signIn')}</Button>)}
       {state?.phase === 'error' && <Button size="sm" variant="ghost" disabled={busy} onClick={() => { void run(refresh) }}>{t('retry')}</Button>}
-    </footer>
+    </div>
   </section>
 }
 
@@ -182,7 +204,6 @@ export function apply(ctx: Context): void {
       signOut: async () => { const r = await scope.remote.shisa.signOut(); if (!r.ok) throw new Error(r.error.message) },
       cancel: async () => { const r = await scope.remote.shisa.cancel(); if (!r.ok) throw new Error(r.error.message) },
       setApiKey: async (key) => { const r = await scope.remote.shisa.setApiKey(key); if (!r.ok) throw new Error(r.error.message) },
-      clearApiKey: async () => { const r = await scope.remote.shisa.clearApiKey(); if (!r.ok) throw new Error(r.error.message) },
     }
     registerAccountUi(scope, actions)
   })
