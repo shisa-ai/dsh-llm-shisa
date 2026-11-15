@@ -42,8 +42,7 @@ links and removes them on the next start. Do not also enable the older separate
 `dsh-experimental-shisa-provider` / `shisa-ui` packages: they own the same service
 and slot registrations.
 
-The package is not published to npm; the release asset is the distribution
-channel. To build from source instead, with Node >=22.19:
+To build from source instead, with Node >=22.19:
 
 ```sh
 npm ci
@@ -126,22 +125,6 @@ Releases are tag-driven; nothing is published from a branch.
 
    The release asset URL is the supported install source. A local `file:` or
    `link:` install is disposable and is removed by the desktop shell on restart.
-
-The project does **not** publish to npm today; the release asset is the only
-distribution channel. [`.github/workflows/publish-npm.yml`](.github/workflows/publish-npm.yml)
-exists for a future decision and is not part of the release flow. It refuses
-anything that is not an annotated `vX.Y.Z` tag matching `package.json`, refuses
-to overwrite a published version, and publishes the packed tarball with
-provenance. Enabling it needs two pieces of setup that live outside the
-repository:
-
-- a GitHub environment named `npm-publish`;
-- a Trusted Publisher entry on npmjs.com for this repository, workflow
-  `publish-npm.yml`, environment `npm-publish`, with **Allow npm publish**
-  enabled (new entries default to stage-only).
-
-npm only offers the Trusted Publisher settings on an existing package, so the
-first version of a new name would still have to be published once by a maintainer.
 
 ## Syncing with Jouzu
 
