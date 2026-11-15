@@ -107,12 +107,14 @@ Releases are tag-driven; nothing is published from a branch.
    git push origin v0.2.0
    ```
 
-4. Attach the packed tarball to a GitHub release on that tag:
+4. Pushing the tag is the release. The
+   [`Release`](.github/workflows/release.yml) workflow rebuilds from that tag,
+   re-runs typecheck, build, tests and the runtime audit, refuses an existing
+   release, then publishes the packed tarball **and** a `SHA256SUMS` file
+   generated in the same job.
 
-   ```sh
-   npm pack
-   gh release create v0.2.0 dsh-llm-shisa-0.2.0.tgz --title "dsh-llm-shisa 0.2.0" --notes-file release-notes.md
-   ```
+   Nothing is attached to a release by hand: an artifact that exists only
+   because someone uploaded it is an artifact the next release will not have.
 
    The release asset URL is the supported install source. A local `file:` or
    `link:` install is disposable and is removed by the desktop shell on restart.
