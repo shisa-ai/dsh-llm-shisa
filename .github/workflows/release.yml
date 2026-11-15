@@ -27,10 +27,14 @@ jobs:
 
       - name: Verify the tag is annotated and matches the package version
         env:
+          GH_TOKEN: ${{ github.token }}
           RELEASE_REF: ${{ github.ref_name }}
         run: |
           [[ "$RELEASE_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          [[ "$(git cat-file -t "refs/tags/$RELEASE_REF")" == "tag" ]]
+          # checkout leaves the triggering tag on FETCH_HEAD rather than under
+          # refs/tags, so ask the API whether the ref is an annotated tag object.
+          TYPE=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_REF" --jq .object.type)
+          [[ "$TYPE" == "tag" ]]
           node -e 'const p=require("./package.json"); if (`v${p.version}` !== process.env.RELEASE_REF) process.exit(1)'
 
       - run: npm ci --ignore-scripts
