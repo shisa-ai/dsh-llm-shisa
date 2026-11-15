@@ -1,0 +1,67 @@
+name: Release
+
+# A pushed annotated tag is the only trigger. The job rebuilds from that tag,
+# re-runs the same checks as Verify, and publishes the packed tarball together
+# with its checksum, so neither artifact depends on a local machine.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Verify the tag is annotated and matches the package version
+        env:
+          RELEASE_REF: ${{ github.ref_name }}
+        run: |
+          [[ "$RELEASE_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$(git cat-file -t "refs/tags/$RELEASE_REF")" == "tag" ]]
+          node -e 'const p=require("./package.json"); if (`v${p.version}` !== process.env.RELEASE_REF) process.exit(1)'
+
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+      - run: npm audit --omit=dev --audit-level=high
+
+      - name: Pack and checksum
+        run: |
+          npm pack
+          sha256sum dsh-llm-shisa-*.tgz > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Refuse to overwrite a published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_REF: ${{ github.ref_name }}
+        run: |
+          if gh release view "$RELEASE_REF" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "release $RELEASE_REF already exists" >&2
+            exit 1
+          fi
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_REF: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_REF" \
+            dsh-llm-shisa-*.tgz SHA256SUMS \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "dsh-llm-shisa ${RELEASE_REF#v}" \
+            --generate-notes
