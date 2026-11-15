@@ -36,11 +36,15 @@ jobs:
 
       - name: Verify immutable release tag
         env:
+          GH_TOKEN: ${{ github.token }}
           RELEASE_REF: ${{ inputs.ref }}
         run: |
           [[ "$RELEASE_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          [[ "$(git cat-file -t "refs/tags/$RELEASE_REF")" == "tag" ]]
-          [[ "$(git rev-parse "refs/tags/$RELEASE_REF^{commit}")" == "$GITHUB_SHA" ]]
+          # Ask the API rather than git: checkout leaves the tag on FETCH_HEAD.
+          TYPE=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_REF" --jq .object.type)
+          [[ "$TYPE" == "tag" ]]
+          TARGET=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_REF" --jq .object.sha | xargs -I{} gh api "repos/$GITHUB_REPOSITORY/git/tags/{}" --jq .object.sha)
+          [[ "$TARGET" == "$GITHUB_SHA" ]]
           node -e 'const p=require("./package.json"); if (`v${p.version}` !== process.env.RELEASE_REF) process.exit(1)'
 
       - run: npm ci --ignore-scripts

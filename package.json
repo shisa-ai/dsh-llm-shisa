@@ -15,11 +15,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sabishii-me/dsh-llm-shisa.git"
+    "url": "git+https://github.com/shisa-ai/dsh-llm-shisa.git"
   },
-  "homepage": "https://github.com/sabishii-me/dsh-llm-shisa#readme",
+  "homepage": "https://github.com/shisa-ai/dsh-llm-shisa#readme",
   "bugs": {
-    "url": "https://github.com/sabishii-me/dsh-llm-shisa/issues"
+    "url": "https://github.com/shisa-ai/dsh-llm-shisa/issues"
   },
   "publishConfig": {
     "access": "public"
