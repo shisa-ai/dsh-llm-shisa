@@ -21,20 +21,18 @@ Tested against DSH **0.2.1-rc.2** and the stable `cordis` 4.0.5 / `schemastery`
 3.18.5 baseline. Peer ranges accept any `0.2.1` prerelease or release; other host
 versions are not asserted.
 
-Build a package with Node >=22.19:
+Install the release asset with DSH's plugin manager:
 
 ```sh
-npm ci
-npm run build
-npm test
-npm pack
+dsh plugin --profile <profile> add \
+  https://github.com/shisa-ai/dsh-llm-shisa/releases/download/v0.2.1/dsh-llm-shisa-0.2.1.tgz
 ```
 
-Install the resulting tarball through DSH's plugin manager, or from the release
-asset over HTTPS:
+Every release also ships a `SHA256SUMS` file next to the tarball; verify it before
+installing if you want to pin the bytes:
 
 ```sh
-dsh plugin --profile <name> add https://github.com/<owner>/dsh-llm-shisa/releases/download/v<version>/dsh-llm-shisa-<version>.tgz
+sha256sum -c SHA256SUMS
 ```
 
 The package declares `dsh.bundle` and includes `cordis.patch.yml`, so the normal
@@ -43,6 +41,16 @@ profile bundle mechanism activates it. **Do not install from a local path**
 links and removes them on the next start. Do not also enable the older separate
 `dsh-experimental-shisa-provider` / `shisa-ui` packages: they own the same service
 and slot registrations.
+
+The package is not published to npm; the release asset is the distribution
+channel. To build from source instead, with Node >=22.19:
+
+```sh
+npm ci
+npm run build
+npm test
+npm pack
+```
 
 ## Authorization and models
 
@@ -119,17 +127,21 @@ Releases are tag-driven; nothing is published from a branch.
    The release asset URL is the supported install source. A local `file:` or
    `link:` install is disposable and is removed by the desktop shell on restart.
 
-Optional npm publication is manual and gated by
-[`.github/workflows/publish-npm.yml`](.github/workflows/publish-npm.yml). It
-refuses anything that is not an annotated `vX.Y.Z` tag matching `package.json`,
-refuses to overwrite a published version, and publishes the packed tarball with
-provenance. Two pieces of setup live outside the repository:
+The project does **not** publish to npm today; the release asset is the only
+distribution channel. [`.github/workflows/publish-npm.yml`](.github/workflows/publish-npm.yml)
+exists for a future decision and is not part of the release flow. It refuses
+anything that is not an annotated `vX.Y.Z` tag matching `package.json`, refuses
+to overwrite a published version, and publishes the packed tarball with
+provenance. Enabling it needs two pieces of setup that live outside the
+repository:
 
 - a GitHub environment named `npm-publish`;
 - a Trusted Publisher entry on npmjs.com for this repository, workflow
-  `publish-npm.yml`, environment `npm-publish`.
+  `publish-npm.yml`, environment `npm-publish`, with **Allow npm publish**
+  enabled (new entries default to stage-only).
 
-Then `gh workflow run publish-npm.yml -f ref=v0.2.0`.
+npm only offers the Trusted Publisher settings on an existing package, so the
+first version of a new name would still have to be published once by a maintainer.
 
 ## Syncing with Jouzu
 
